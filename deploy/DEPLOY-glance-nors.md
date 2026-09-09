@@ -1,4 +1,4 @@
-# Deploy — Glance Nors bookmark
+# Deploy — Glance Nors bookmark + Quick note widget
 
 Short version (wrap-proof, one password prompt):
 
@@ -6,8 +6,9 @@ Short version (wrap-proof, one password prompt):
 ssh -t hetzner 'sudo bash /tmp/nors-glance-nors/apply-glance-nors.sh'
 ```
 
-Expect: `nors.png` listed → `ensured Nors and Quick note bookmarks` →
-`active` + `200`. Then open Glance: **Apps → Live** shows Skadi + Nors.
+Expect: `nors.png` listed → `ensured Nors bookmark and Quick note widget` →
+`active` + `200`. Then open Glance: **Apps** shows a Quick note card beside
+the subscriptions widget, while **Apps → Live** shows the Nors bookmark.
 Details below; agents do not SSH-write, Burak pastes.
 Apply **after** the Nors UI deploy and Access setup (`deploy/install.sh` plus
 Access apps for `/nors` and `/api/collections/nors_notes`) — before both are
@@ -48,14 +49,14 @@ scp ~/projects/nors/deploy/patch-glance-nors.py \
 ssh -t hetzner 'sudo install -m 644 /tmp/nors-glance-nors/nors-mark-512.png /opt/glance/assets/nors.png && ls -la /opt/glance/assets/nors.png'
 ```
 
-## 3 — Patch glance.yml (adds Nors + Quick note after Skadi)
+## 3 — Patch glance.yml (adds the Nors bookmark + Quick note widget)
 
 ```bash
 ssh -t hetzner 'sudo python3 /tmp/nors-glance-nors/patch-glance-nors.py'
 ```
 
-Expected: backup path printed, "ensured Nors and Quick note bookmarks
-(Apps page, Live group)". A second run prints "already up to date".
+Expected: backup path printed, "ensured Nors bookmark and Quick note widget
+(Apps page)". A second run prints "already up to date".
 
 ## 4 — Restart and verify
 
@@ -66,5 +67,7 @@ ssh -t hetzner 'sudo systemctl restart glance && sleep 1 && systemctl is-active 
 `000` right after restart is usually timing — wait a second and curl again.
 Expect `active` and `200`.
 
-Then open Glance in the browser: **Apps → Live** shows Skadi + Nors;
-both open their app behind Access.
+Then open Glance in the browser: **Apps** shows the Quick note card under the
+subscriptions widget, and **Apps → Live** shows Skadi + Nors. All links open
+their app behind Access. The Quick note widget does not fetch or expose note
+content; it only opens Nors directly in the new-note editor.
