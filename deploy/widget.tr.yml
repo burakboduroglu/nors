@@ -1,73 +1,43 @@
-# Skadi's Glance widget. Paste it into a column in glance.yml.
-#
-# Replace __SKADI_URL__ with the address the form is served at. Point `url` at
-# PocketBase as Glance can reach it - loopback when they share a host, which is
-# what lets the summary endpoint stay off the public internet.
+# Nors Glance widget. Paste into the same small Apps column as Skadi.
+# The endpoint is loopback-only: Caddy must return 404 for /api/nors/summary.
           - type: custom-api
-            title: Abonelikler
-            title-url: __SKADI_URL__
-            cache: 30m
-            url: http://127.0.0.1:8090/api/subs/summary
+            title: Nors
+            title-url: https://bbp.burakboduroglu.com.tr/nors/
+            cache: 5m
+            url: http://127.0.0.1:8090/api/nors/summary
             template: |
               <div class="flex justify-between text-center margin-bottom-15">
                 <div>
-                  <div class="color-highlight size-h3">{{ printf "%.0f" (.JSON.Float "monthly_net") }} ₺</div>
-                  <div class="size-h6">AYLIK NET</div>
+                  <div class="color-highlight size-h3">{{ .JSON.Int "total" }}</div>
+                  <div class="size-h6">NOT</div>
                 </div>
                 <div>
-                  <div class="size-h3">{{ printf "%.0f" (.JSON.Float "yearly_net") }} ₺</div>
-                  <div class="size-h6">YILLIK</div>
+                  <div class="size-h3">{{ .JSON.Int "drafts" }}</div>
+                  <div class="size-h6">TASLAK</div>
                 </div>
                 <div>
-                  <div class="size-h3 color-positive">{{ printf "%.0f" (.JSON.Float "monthly_cashback") }} ₺</div>
-                  <div class="size-h6">CASHBACK</div>
+                  <div class="size-h3 color-positive">{{ .JSON.Int "pinned" }}</div>
+                  <div class="size-h6">SABİT</div>
                 </div>
               </div>
 
-              {{ $upcoming := .JSON.Array "upcoming" }}
-              {{ if $upcoming }}
+              {{ $recent := .JSON.Array "recent" }}
+              {{ if $recent }}
               <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
-                {{ range $upcoming }}
+                {{ range $recent }}
                 <li class="flex items-center gap-10">
-                  {{ $logo := .String "logo" }}
-                  {{ if $logo }}
-                  <img class="shrink-0" src="{{ $logo }}" alt="" loading="lazy"
-                       style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px">
-                  {{ end }}
                   <div class="grow text-truncate">
-                    <div class="text-truncate">{{ .String "name" }}</div>
-                    <div class="size-h6">
-                      {{ $d := .Int "days" }}
-                      {{ if .Bool "overdue" }}<span class="color-negative">gecikmiş</span>
-                      {{ else if eq $d 0 }}<span class="color-negative">bugün</span>
-                      {{ else if le $d 3 }}<span class="color-highlight">{{ $d }} gün</span>
-                      {{ else }}{{ $d }} gün{{ end }}
-                    </div>
+                    <a class="color-highlight text-truncate block" href="https://bbp.burakboduroglu.com.tr/nors/#/n/{{ .String "slug" }}">{{ .String "title" }}</a>
+                    <div class="size-h6">{{ .String "kind" }} · {{ .String "updated" }}</div>
                   </div>
-                  <div class="text-right shrink-0">
-                    <div>{{ printf "%.0f" (.Float "amount") }} {{ .String "currency" }}</div>
-                    {{ if gt (.Float "cashback") 0.0 }}
-                    <div class="size-h6 color-positive">−{{ printf "%.0f" (.Float "cashback") }}</div>
-                    {{ end }}
-                  </div>
+                  {{ if eq (.String "status") "draft" }}<span class="color-subdue size-h6">taslak</span>{{ end }}
                 </li>
                 {{ end }}
               </ul>
               {{ else }}
-              <p class="size-h6 color-subdue">45 gün içinde ödeme yok.</p>
-              {{ end }}
-
-              {{ if .JSON.Bool "fx_stale" }}
-              <p class="size-h6 color-negative margin-top-10">
-                Kur güncellenemedi{{ if .JSON.String "fx_date" }} — {{ .JSON.String "fx_date" }} kuru kullanıldı{{ end }}
-              </p>
-              {{ end }}
-              {{ if gt (.JSON.Int "unconverted") 0 }}
-              <p class="size-h6 color-negative margin-top-5">
-                {{ .JSON.Int "unconverted" }} kayıt kur bulunamadığı için toplama dahil edilmedi.
-              </p>
+              <p class="size-h6 color-subdue">Henüz not yok.</p>
               {{ end }}
 
               <p class="margin-top-15 text-right">
-                <a href="__SKADI_URL__?add=1" class="color-highlight size-h6">+ Abonelik ekle</a>
+                <a href="https://bbp.burakboduroglu.com.tr/nors/?new=1" class="color-highlight size-h6">+ Yeni not</a>
               </p>

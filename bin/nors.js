@@ -22,7 +22,7 @@ Options
   -h, --help   this
   -v, --version
 
-The install step only writes pb_migrations/ and pb_public/nors/.
+The install step only writes pb_migrations/, pb_hooks/, and pb_public/nors/.
 Your data lives in pb_data/ and is never read or written.
 `
 
@@ -52,6 +52,7 @@ async function install(dir, force) {
 
   const parts = [
     ["pb_migrations", "pb_migrations"],
+    ["pb_hooks", "pb_hooks"],
     [join("pb_public", "nors"), join("pb_public", "nors")]
   ]
   for (const [from, to] of parts) {
@@ -71,7 +72,9 @@ Next, and none of it is automatic:
   3. Put an auth layer in front of /nors and
      /api/collections/nors_notes. The collection is superuser-only on its own;
      the page is a login form anyone could reach.
-  4. A source checkout includes optional seed notes and the import-seeds script.
+  4. Block /api/nors/summary at the public reverse proxy. It is intentionally
+     unauthenticated so a same-host Glance can read it over loopback.
+  5. A source checkout includes optional seed notes and the import-seeds script.
 `)
 }
 

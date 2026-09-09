@@ -10,12 +10,14 @@ Mirror the `/subs` setup:
 
 1. Application for `bbp.burakboduroglu.com.tr/nors` — same PIN policy.
 2. Application for `bbp.burakboduroglu.com.tr/api/collections/nors_notes`.
-3. No unauthenticated edge hook without a Caddy `respond … 404` guard
+3. Keep the loopback-only widget endpoint off the edge:
+   `respond /api/nors/summary 404`. The staged deploy applies and validates
+   this guard before installing the PocketBase hook.
 ```bash
 # Mac: stage, send, install
 cd ~/Projects/nors && bun run build
 rm -rf /tmp/nors-stage && mkdir -p /tmp/nors-stage
-cp -r pb_migrations pb_public deploy/install.sh /tmp/nors-stage/
+cp -r pb_migrations pb_hooks pb_public deploy/install.sh /tmp/nors-stage/
 scp -r /tmp/nors-stage hetzner:/tmp/
 ssh hetzner
 # on the box:

@@ -18,6 +18,7 @@
   "files": [
     "bin",
     "pb_migrations",
+    "pb_hooks",
     "pb_public",
     "LICENSE",
     "README.md"

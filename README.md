@@ -89,7 +89,7 @@ For a source checkout and remote host, the `deploy/` installer performs the
 stop → copy → start sequence:
 
 ```bash
-scp -r pb_migrations pb_public deploy/install.sh host:/tmp/nors-stage/
+scp -r pb_migrations pb_hooks pb_public deploy/install.sh host:/tmp/nors-stage/
 ssh host
 sudo /tmp/nors-stage/install.sh /tmp/nors-stage
 ```
@@ -108,6 +108,7 @@ NORS_PB_URL=https://your.host NORS_PB_EMAIL=... NORS_PB_PASSWORD=... \
 ```
 browser ──▶ /nors/                            static page, superuser login
 browser ──▶ /api/collections/nors_notes/*      superuser only, CRUD + reorder
+Glance  ──▶ 127.0.0.1:8090/api/nors/summary    counts + recent titles
 agent   ──▶ drafts markdown ──▶ editor ──▶ publish
 ```
 
@@ -122,6 +123,11 @@ superuser only. The dashboard holds a superuser token in localStorage — anyone
 with the browser profile has the keys, documented rather than hidden. There is
 no audit log and no second user; this is a single-operator surface behind
 Cloudflare Access, not a multi-user app.
+
+The Glance summary hook has no PocketBase authentication because Glance reads
+it over loopback. The public reverse proxy must return `404` for the exact
+`/api/nors/summary` path; `deploy/patch-caddy-nors-summary.py` installs that
+guard. Do not expose this endpoint publicly: it includes recent note titles.
 
 ## What it deliberately does not do
 

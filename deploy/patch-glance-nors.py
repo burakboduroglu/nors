@@ -38,7 +38,7 @@ OLD_QUICK_BLOCK = [
 SUBS_END = "          # <<< subs-tracker <<<"
 QUICK_START = "          # >>> nors-quick-note (managed, do not hand-edit) >>>"
 QUICK_END = "          # <<< nors-quick-note <<<"
-QUICK_WIDGET = [
+OLD_HTML_WIDGET = [
     QUICK_START,
     "          - type: html",
     "            title: Quick note",
@@ -53,6 +53,52 @@ QUICK_WIDGET = [
     "              </div>",
     '              <p class="margin-top-15 text-right">',
     '                <a href="https://bbp.burakboduroglu.com.tr/nors/?new=1" class="color-highlight size-h6">+ Yeni not oluştur →</a>',
+    "              </p>",
+    QUICK_END,
+]
+
+QUICK_WIDGET = [
+    QUICK_START,
+    "          - type: custom-api",
+    "            title: Nors",
+    "            title-url: https://bbp.burakboduroglu.com.tr/nors/",
+    "            cache: 5m",
+    "            url: http://127.0.0.1:8090/api/nors/summary",
+    "            template: |",
+    '              <div class="flex justify-between text-center margin-bottom-15">',
+    "                <div>",
+    '                  <div class="color-highlight size-h3">{{ .JSON.Int "total" }}</div>',
+    '                  <div class="size-h6">NOT</div>',
+    "                </div>",
+    "                <div>",
+    '                  <div class="size-h3">{{ .JSON.Int "drafts" }}</div>',
+    '                  <div class="size-h6">TASLAK</div>',
+    "                </div>",
+    "                <div>",
+    '                  <div class="size-h3 color-positive">{{ .JSON.Int "pinned" }}</div>',
+    '                  <div class="size-h6">SABİT</div>',
+    "                </div>",
+    "              </div>",
+    "",
+    '              {{ $recent := .JSON.Array "recent" }}',
+    "              {{ if $recent }}",
+    '              <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">',
+    "                {{ range $recent }}",
+    '                <li class="flex items-center gap-10">',
+    '                  <div class="grow text-truncate">',
+    '                    <a class="color-highlight text-truncate block" href="https://bbp.burakboduroglu.com.tr/nors/#/n/{{ .String "slug" }}">{{ .String "title" }}</a>',
+    '                    <div class="size-h6">{{ .String "kind" }} · {{ .String "updated" }}</div>',
+    "                  </div>",
+    '                  {{ if eq (.String "status") "draft" }}<span class="color-subdue size-h6">taslak</span>{{ end }}',
+    "                </li>",
+    "                {{ end }}",
+    "              </ul>",
+    "              {{ else }}",
+    '              <p class="size-h6 color-subdue">Henüz not yok.</p>',
+    "              {{ end }}",
+    "",
+    '              <p class="margin-top-15 text-right">',
+    '                <a href="https://bbp.burakboduroglu.com.tr/nors/?new=1" class="color-highlight size-h6">+ Yeni not</a>',
     "              </p>",
     QUICK_END,
 ]
@@ -119,7 +165,11 @@ def main() -> None:
         if len(widget_starts) != 1 or len(widget_ends) != 1:
             sys.exit("incomplete Quick note widget markers — not touching the file")
         start, end = widget_starts[0], widget_ends[0]
-        if end < start or lines[start : end + 1] != QUICK_WIDGET:
+        current = lines[start : end + 1]
+        if current == OLD_HTML_WIDGET:
+            lines[start : end + 1] = QUICK_WIDGET
+            changed = True
+        elif end < start or current != QUICK_WIDGET:
             sys.exit("Quick note widget differs from the managed block — not touching the file")
     else:
         subs_ends = matches(lines, SUBS_END, apps, services)
