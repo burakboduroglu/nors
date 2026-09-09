@@ -4,6 +4,7 @@ import { renderMarkdown, runMermaidDiagrams } from '../lib/md'
 import { KIND_LABELS, NOTE_KINDS, getNote, saveNote } from '../lib/pb'
 import type { NoteInput, NorsNote } from '../lib/pb'
 import { go, NEW_SLUG } from '../lib/route'
+import Toast from '../components/Toast'
 
 function slugify(title: string): string {
   const tr: Record<string, string> = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' }
@@ -50,9 +51,7 @@ const Editor: Component<{ slug: string; onExpired: () => void }> = (props) => {
 
   return (
     <main class="editor">
-      <Show when={err()}>
-        <p class="error">{err()}</p>
-      </Show>
+      <Toast message={err()} onDismiss={() => setErr('')} />
       <Show when={existing.loading}>
         <p class="hint">Loading…</p>
       </Show>
@@ -204,12 +203,24 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
 
   return (
     <>
-      <nav class="crumbs">
-        <a href="#/">← Notes</a>
-        <Show when={n().slug}>
-          <a href={`#/n/${encodeURIComponent(n().slug)}`}>Read</a>
-        </Show>
+      <Toast message={err()} onDismiss={() => setErr('')} />
+      <nav class="crumbs editor-nav">
+        <a class="back-link" href="#/">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          All notes
+        </a>
         <span class="spacer" />
+        <Show when={n().slug}>
+          <a class="view-link" href={`#/n/${encodeURIComponent(n().slug)}`}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            View note
+          </a>
+        </Show>
         <button
           type="button"
           class="pinbtn"
@@ -224,9 +235,6 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
           </svg>
         </button>
       </nav>
-      <Show when={err()}>
-        <p class="error">{err()}</p>
-      </Show>
       <input
         class="doctitle"
         placeholder="New note title…"
@@ -309,12 +317,26 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
         />
       </Show>
       <div class="edit-foot">
-        <button type="button" class="ghost" disabled={busy()} onClick={() => onSave('draft')}>
-          {busy() ? '…' : 'Save draft'}
-        </button>
-        <button type="button" disabled={busy()} onClick={() => onSave('published')}>
-          {busy() ? '…' : n().status === 'published' ? 'Republish' : 'Publish'}
-        </button>
+        <Show
+          when={n().status === 'published'}
+          fallback={
+            <>
+              <button type="button" class="ghost" disabled={busy()} onClick={() => onSave('draft')}>
+                {busy() ? '…' : 'Save draft'}
+              </button>
+              <button type="button" disabled={busy()} onClick={() => onSave('published')}>
+                {busy() ? '…' : 'Publish'}
+              </button>
+            </>
+          }
+        >
+          <button type="button" class="ghost" disabled={busy()} onClick={() => onSave('draft')}>
+            {busy() ? '…' : 'Move to drafts'}
+          </button>
+          <button type="button" disabled={busy()} onClick={() => onSave('published')}>
+            {busy() ? '…' : 'Save changes'}
+          </button>
+        </Show>
       </div>
     </>
   )

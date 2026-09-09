@@ -5,6 +5,7 @@ import { go, NEW_SLUG, useRoute } from './lib/route'
 import Dashboard from './pages/Dashboard'
 import Reader from './pages/Reader'
 import Editor from './pages/Editor'
+import Toast from './components/Toast'
 import './App.css'
 const App: Component = () => {
   if (new URLSearchParams(location.search).get('new') === '1') {
@@ -68,6 +69,7 @@ const App: Component = () => {
 
   return (
     <div class="shell">
+      <Toast message={err()} onDismiss={() => setErr('')} />
       <header class="top">
         <a class="brand" href="#/">
           <img src={`${import.meta.env.BASE_URL}nors-mark.svg`} alt="" width="30" height="30" />
@@ -129,9 +131,6 @@ const App: Component = () => {
                 required
               />
             </label>
-            <Show when={err()}>
-              <p class="error">{err()}</p>
-            </Show>
             <button type="submit" disabled={busy()}>
               {busy() ? '…' : 'Enter'}
             </button>

@@ -3,6 +3,7 @@ import type { Component } from 'solid-js'
 import { KIND_LABELS, NOTE_KINDS, listNotes, saveNote } from '../lib/pb'
 import type { NoteKind, NorsNote } from '../lib/pb'
 import { go } from '../lib/route'
+import Toast from '../components/Toast'
 
 const STEP = 10
 
@@ -85,6 +86,7 @@ const Dashboard: Component<{ onExpired: () => void }> = (props) => {
 
   return (
     <main class="dash">
+      <Toast message={err()} onDismiss={() => setErr('')} />
       <div class="dash-head">
         <h2>Notes</h2>
         <button type="button" class="ghost icononly" title="Refresh" aria-label="Refresh" onClick={() => refetch()}>
@@ -107,9 +109,6 @@ const Dashboard: Component<{ onExpired: () => void }> = (props) => {
           )}
         </For>
       </nav>
-      <Show when={err()}>
-        <p class="error">{err()}</p>
-      </Show>
       <Show when={notes.loading}>
         <div class="spin-wrap" role="status" aria-label="Loading">
           <span class="spin" />

@@ -131,6 +131,21 @@ export async function saveNote(input: NoteInput, id?: string): Promise<NorsNote>
   return normalize((await res.json()) as Record<string, unknown>)
 }
 
+export async function deleteNote(id: string): Promise<void> {
+  const res = await fetch(`${baseUrl()}/api/collections/nors_notes/records/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  if (res.status === 401) {
+    clearSession()
+    throw new Error('session expired')
+  }
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(err || `delete failed (${res.status})`)
+  }
+}
+
 function normalize(row: Record<string, unknown>): NorsNote {
   const tags = row.tags
   return {
