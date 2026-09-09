@@ -1,0 +1,13 @@
+{
+  "name": "nors",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Personal ops notes dashboard on PocketBase — Norse-named, Solid UI at /nors/",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --cwd web dev",
+    "build": "bun --cwd web build",
+    "preview": "bun --cwd web preview",
+    "import-seeds": "bun scripts/import-seeds.ts"
+  }
+}
