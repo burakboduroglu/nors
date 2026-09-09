@@ -1,6 +1,4 @@
-<div align="center">
-
-<img src="assets/nors-mark-512.png" alt="Nors mark" width="112">
+![Nors mark](assets/nors-mark-32.png)
 
 # Nors
 
@@ -13,8 +11,6 @@
 ![No Docker](https://img.shields.io/badge/Docker-not_required-000?style=flat-square&logo=docker)
 ![Bun](https://img.shields.io/badge/Bun-runtime-000?style=flat-square&logo=bun)
 
-</div>
-
 ---
 
 Nors is not an application you deploy. It is one migration and one static
@@ -22,11 +18,7 @@ page, copied into a PocketBase directory you already have. The database,
 auth, HTTP server and backups are already running — a dedicated notes app
 would duplicate all of them.
 
-<div align="center">
-
-<img src="assets/screenshot-dash.png" alt="Nors dashboard — note cards with kind tabs" width="760">
-
-</div>
+![Nors dashboard — note cards with kind tabs](assets/screenshot-dash.png)
 
 ## What it is
 
@@ -51,11 +43,7 @@ is nothing else to fill in.
 | 🛡️ | **Unsaved work asks first** | Leaving the editor with edits pops a guard instead of silently dropping the draft. |
 | 📵 | **No telemetry** | Zero outbound requests. The page talks to your PocketBase and nothing else. |
 
-<div align="center">
-
-<img src="assets/screenshot-reader.png" alt="Nors reader — CLI shelf note with rendered Mermaid diagrams" width="760">
-
-</div>
+![Nors reader — CLI shelf note with rendered Mermaid diagrams](assets/screenshot-reader.png)
 
 ## Footprint
 
