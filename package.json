@@ -19,8 +19,6 @@
     "bin",
     "pb_migrations",
     "pb_public",
-    "scripts/import-seeds.ts",
-    "seeds",
     "LICENSE",
     "README.md"
   ],

@@ -4,7 +4,6 @@
 // or stops anything, and never talks to the network.
 
 import { readFile, mkdir, cp, access } from "node:fs/promises"
-import { spawn } from "node:child_process"
 import { constants } from "node:fs"
 import { join, dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -18,8 +17,6 @@ const HELP = `
 nors ${pkg.version} — personal ops notes on PocketBase
 
   nors install <pocketbase-dir>   copy the migration and the page into place
-  nors seed                       upsert the three bundled notes (requires bun)
-
 Options
   --force      install even if the target does not look like a PocketBase directory
   -h, --help   this
@@ -74,25 +71,8 @@ Next, and none of it is automatic:
   3. Put an auth layer in front of /nors and
      /api/collections/nors_notes. The collection is superuser-only on its own;
      the page is a login form anyone could reach.
-  4. Load the seed notes through the API (needs bun on this machine):
-     NORS_PB_URL=https://your.host NORS_PB_EMAIL=... NORS_PB_PASSWORD=... \\
-       bunx @burakboduroglu/nors seed
-     The import is an upsert by slug — safe to re-run.
+  4. A source checkout includes optional seed notes and the import-seeds script.
 `)
-}
-
-async function seed() {
-  return await new Promise((resolveSeed) => {
-    const child = spawn("bun", [join(ROOT, "scripts", "import-seeds.ts")], {
-      env: process.env,
-      stdio: "inherit",
-    })
-    child.once("error", (error) => {
-      console.error(`Could not start bun: ${error.message}`)
-      resolveSeed(1)
-    })
-    child.once("exit", (code) => resolveSeed(code ?? 1))
-  })
 }
 
 const [cmd, ...rest] = process.argv.slice(2)
@@ -101,7 +81,6 @@ const force = rest.includes("--force")
 if (cmd === "-v" || cmd === "--version") { console.log(pkg.version); process.exit(0) }
 if (!cmd || cmd === "-h" || cmd === "--help") { console.log(HELP); process.exit(0) }
 if (cmd === "install") { await install(rest.find((a) => !a.startsWith("--")), force); process.exit(0) }
-if (cmd === "seed") { process.exit(await seed()) }
 
 console.error(`Unknown command: ${cmd}\n${HELP}`)
 process.exit(1)
