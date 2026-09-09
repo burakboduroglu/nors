@@ -1,0 +1,26 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: built tree present
+        run: |
+          test -f ../pb_public/nors/index.html
+          test -f ../pb_public/nors/nors-mark.svg
+          ls ../pb_public/nors/assets | grep -q .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nors-ui
+          path: pb_public/nors
