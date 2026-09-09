@@ -6,7 +6,7 @@ Short version (wrap-proof, one password prompt):
 ssh -t hetzner 'sudo bash /tmp/nors-glance-nors/apply-glance-nors.sh'
 ```
 
-Expect: `nors.png` listed → `inserted Nors bookmark after line 288` →
+Expect: `nors.png` listed → `ensured Nors and Quick note bookmarks` →
 `active` + `200`. Then open Glance: **Apps → Live** shows Skadi + Nors.
 Details below; agents do not SSH-write, Burak pastes.
 Apply **after** the Nors UI deploy and Access setup (`deploy/install.sh` plus
@@ -48,13 +48,13 @@ scp ~/projects/nors/deploy/patch-glance-nors.py \
 ssh -t hetzner 'sudo install -m 644 /tmp/nors-glance-nors/nors-mark-512.png /opt/glance/assets/nors.png && ls -la /opt/glance/assets/nors.png'
 ```
 
-## 3 — Patch glance.yml (adds Nors bookmark after Skadi)
+## 3 — Patch glance.yml (adds Nors + Quick note after Skadi)
 
 ```bash
 ssh -t hetzner 'sudo python3 /tmp/nors-glance-nors/patch-glance-nors.py'
 ```
 
-Expected: backup path printed, "inserted Nors bookmark after line 288
+Expected: backup path printed, "ensured Nors and Quick note bookmarks
 (Apps page, Live group)". A second run prints "already up to date".
 
 ## 4 — Restart and verify

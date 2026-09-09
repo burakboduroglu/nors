@@ -1,12 +1,15 @@
 import { createSignal, onCleanup, onMount, Show } from 'solid-js'
 import type { Component } from 'solid-js'
 import { clearSession, getToken, login } from './lib/pb'
-import { go, useRoute } from './lib/route'
+import { go, NEW_SLUG, useRoute } from './lib/route'
 import Dashboard from './pages/Dashboard'
 import Reader from './pages/Reader'
 import Editor from './pages/Editor'
 import './App.css'
 const App: Component = () => {
+  if (new URLSearchParams(location.search).get('new') === '1') {
+    history.replaceState(null, '', `${location.pathname}#/edit/${NEW_SLUG}`)
+  }
   const [token, setToken] = createSignal(getToken())
   const [email, setEmail] = createSignal('')
   const [password, setPassword] = createSignal('')

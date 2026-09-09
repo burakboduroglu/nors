@@ -1,13 +1,50 @@
 {
-  "name": "nors",
-  "private": true,
+  "name": "@burakboduroglu/nors",
   "version": "0.1.0",
   "description": "Personal ops notes dashboard on PocketBase — Norse-named, Solid UI at /nors/",
+  "license": "MIT",
+  "author": "Burak Boduroğlu",
   "type": "module",
   "scripts": {
     "dev": "bun --cwd web dev",
     "build": "bun --cwd web build",
+    "prepack": "bun --cwd web build",
     "preview": "bun --cwd web preview",
     "import-seeds": "bun scripts/import-seeds.ts"
+  },
+  "bin": {
+    "nors": "bin/nors.js"
+  },
+  "files": [
+    "bin",
+    "pb_migrations",
+    "pb_public",
+    "scripts/import-seeds.ts",
+    "seeds",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "notes",
+    "ops-notes",
+    "pocketbase",
+    "self-hosted",
+    "dashboard",
+    "mermaid",
+    "no-telemetry"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/burakboduroglu/nors.git"
+  },
+  "homepage": "https://github.com/burakboduroglu/nors#readme",
+  "bugs": {
+    "url": "https://github.com/burakboduroglu/nors/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

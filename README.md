@@ -7,6 +7,7 @@
 **Personal ops notes that ride a PocketBase instance you already run.**
 
 [![License](https://img.shields.io/github/license/burakboduroglu/nors?style=flat-square)](LICENSE)
+[![npm](https://img.shields.io/npm/v/@burakboduroglu/nors?style=flat-square&color=000)](https://www.npmjs.com/package/@burakboduroglu/nors)
 ![Self-hosted](https://img.shields.io/badge/self--hosted-only-000?style=flat-square)
 ![No telemetry](https://img.shields.io/badge/telemetry-none-000?style=flat-square)
 ![No Docker](https://img.shields.io/badge/Docker-not_required-000?style=flat-square&logo=docker)
@@ -73,11 +74,19 @@ If PocketBase is already running, the marginal cost of Nors is the file sizes.
 
 ## Install
 
-Copy the migration and the built page onto the box, then restart PocketBase so
-the migration runs. **If it was already running, stop it before copying and
-start it afterwards** — PocketBase watches `pb_hooks` and restarts itself when
-those change, which races a service manager doing the same. A `deploy/`
-installer does the copy in that order:
+Install into a PocketBase directory with the packaged CLI:
+
+```bash
+bunx @burakboduroglu/nors install /path/to/pocketbase
+```
+
+This copies the migration and built page; it never touches `pb_data`. Then
+restart PocketBase so the migration runs. **If it was already running, stop it
+before copying and start it afterwards** — PocketBase watches its directories
+and can race a service manager doing the same.
+
+For a source checkout and remote host, the `deploy/` installer performs the
+stop → copy → start sequence:
 
 ```bash
 scp -r pb_migrations pb_public deploy/install.sh host:/tmp/nors-stage/
@@ -103,7 +112,8 @@ agent   ──▶ drafts markdown ──▶ editor ──▶ publish
 ```
 
 Routes are hashes: `#/` dashboard, `#/n/<slug>` reader,
-`#/edit/<slug|$new>` editor.
+`#/edit/<slug|$new>` editor. `/nors/?new=1` is the stable external entry point
+for a new note; it consumes the query and opens the `$new` editor route.
 
 ## Security
 

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Add the Nors bookmark to the Glance Apps page's Live group.
+"""Add Nors and Quick note bookmarks to the Glance Apps page's Live group.
 
 Apps already exists (Home -> Apps -> Services) with the Skadi widget +
-Skadi bookmark. This inserts one bookmark after Skadi:
+Skadi bookmark. This inserts two bookmarks after Skadi:
 
                   - title: Nors
                     url: https://bbp.burakboduroglu.com.tr/nors/
+                    icon: /assets/nors.png
+                  - title: Quick note
+                    url: https://bbp.burakboduroglu.com.tr/nors/?new=1
                     icon: /assets/nors.png
 
 Idempotent: a re-run is a no-op when the Nors link is already inside
@@ -27,11 +30,14 @@ SERVICES = "  - name: Services"
 SKADI_TITLE = "                  - title: Skadi"
 SKADI_URL = "                    url: https://bbp.burakboduroglu.com.tr/subs/"
 SKADI_ICON = "                    icon: /assets/skadi.png"
-NORS_BLOCK = [
-    "                  - title: Nors",
-    "                    url: https://bbp.burakboduroglu.com.tr/nors/",
-    "                    icon: /assets/nors.png",
-]
+NORS_TITLE = "                  - title: Nors"
+NORS_URL = "                    url: https://bbp.burakboduroglu.com.tr/nors/"
+NORS_ICON = "                    icon: /assets/nors.png"
+NORS_BLOCK = [NORS_TITLE, NORS_URL, NORS_ICON]
+QUICK_TITLE = "                  - title: Quick note"
+QUICK_URL = "                    url: https://bbp.burakboduroglu.com.tr/nors/?new=1"
+QUICK_ICON = "                    icon: /assets/nors.png"
+QUICK_BLOCK = [QUICK_TITLE, QUICK_URL, QUICK_ICON]
 
 
 def main() -> None:
@@ -48,10 +54,6 @@ def main() -> None:
     if len(services) != 1 or services[0] < apps[0]:
         sys.exit(f"expected one '{SERVICES}' after Apps — not touching the file")
 
-    if any(ln.strip() == "- title: Nors" for ln in lines[apps[0] : services[0]]):
-        print("already up to date, nothing written")
-        return
-
     try:
         skadi = lines.index(SKADI_TITLE, apps[0], services[0])
     except ValueError:
@@ -59,7 +61,34 @@ def main() -> None:
     if lines[skadi + 1] != SKADI_URL or lines[skadi + 2] != SKADI_ICON:
         sys.exit("Skadi block has unexpected url/icon lines — not touching the file")
 
-    lines[skadi + 3 : skadi + 3] = NORS_BLOCK
+    nors_matches = [i for i in range(apps[0], services[0]) if lines[i] == NORS_TITLE]
+    if len(nors_matches) > 1:
+        sys.exit("multiple Nors links inside Apps — not touching the file")
+    changed = False
+    if nors_matches:
+        nors = nors_matches[0]
+        if lines[nors : nors + 3] != NORS_BLOCK:
+            sys.exit("Nors block has unexpected url/icon lines — not touching the file")
+    else:
+        nors = skadi + 3
+        lines[nors:nors] = NORS_BLOCK
+        services[0] += len(NORS_BLOCK)
+        changed = True
+
+    quick_matches = [i for i in range(apps[0], services[0]) if lines[i] == QUICK_TITLE]
+    if len(quick_matches) > 1:
+        sys.exit("multiple Quick note links inside Apps — not touching the file")
+    if quick_matches:
+        quick = quick_matches[0]
+        if lines[quick : quick + 3] != QUICK_BLOCK:
+            sys.exit("Quick note block has unexpected url/icon lines — not touching the file")
+    else:
+        lines[nors + 3 : nors + 3] = QUICK_BLOCK
+        changed = True
+
+    if not changed:
+        print("already up to date, nothing written")
+        return
 
     new = "\n".join(lines) + "\n"
     if new == text:
@@ -70,7 +99,7 @@ def main() -> None:
     shutil.copy2(path, backup)
     path.write_text(new)
     print(f"backed up to {backup}")
-    print(f"inserted Nors bookmark after line {skadi + 3} (Apps page, Live group)")
+    print("ensured Nors and Quick note bookmarks (Apps page, Live group)")
 
 
 if __name__ == "__main__":
