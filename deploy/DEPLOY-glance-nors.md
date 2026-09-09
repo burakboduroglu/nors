@@ -3,19 +3,22 @@
 Short version (wrap-proof, one password prompt):
 
 ```bash
-ssh -t hetzner 'sudo bash /tmp/nors-glance-nors/apply.sh'
+ssh -t hetzner 'sudo bash /tmp/nors-glance-nors/apply-glance-nors.sh'
 ```
 
 Expect: `nors.png` listed → `inserted Nors bookmark after line 288` →
 `active` + `200`. Then open Glance: **Apps → Live** shows Skadi + Nors.
 Details below; agents do not SSH-write, Burak pastes.
-Apply **after** the Nors UI deploy (`deploy/install.sh` + Access app for
-`/nors`) — before that `/nors/` is 404 and the bookmark is a dead link.
+Apply **after** the Nors UI deploy and Access setup (`deploy/install.sh` plus
+Access apps for `/nors` and `/api/collections/nors_notes`) — before both are
+ready the bookmark is either dead or points at an unprotected login surface.
 
 Current server state (2026-09-09): Apps page live with Skadi widget +
-Skadi bookmark, `/subs/` 200, `/nors/` 404, no `nors.png` in
-`/opt/glance/assets/`. The patch below was dry-run against a copy of the
-live `glance.yml`: inserts 3 lines, re-run is a no-op.
+Skadi bookmark, `/subs/` 200, `/nors/` 200 with the same HTML hash as the local
+build. The public Nors URL still returns 200 without an Access challenge; add
+Access before applying this bookmark. Glance has no Nors link and no `nors.png`
+in `/opt/glance/assets/`. The patch below was dry-run against a copy of the live
+`glance.yml`: inserts 3 lines, re-run is a no-op.
 
 ## 0 — Pre-check (do not skip)
 
@@ -34,6 +37,7 @@ directory.
 ssh hetzner 'mkdir -p /tmp/nors-glance-nors'
 
 scp ~/projects/nors/deploy/patch-glance-nors.py \
+    ~/projects/nors/deploy/apply-glance-nors.sh \
     ~/projects/nors/assets/nors-mark-512.png \
     hetzner:/tmp/nors-glance-nors/
 ```

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Nors Glance apply — runs ON penolox-server, with sudo.
 # One short invocation so paste-wrapping terminals cannot split it:
-#   ssh -t hetzner 'sudo bash /tmp/nors-glance-nors/apply.sh'
+#   ssh -t hetzner 'sudo bash /tmp/nors-glance-nors/apply-glance-nors.sh'
 # Idempotent: patch re-run is a no-op, install/restart are safe to repeat.
 set -euo pipefail
 
