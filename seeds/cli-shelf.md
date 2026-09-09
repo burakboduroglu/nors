@@ -1,7 +1,7 @@
 ---
 title: CLI shelf
 slug: cli-shelf
-summary: Bu Mac'teki komut satırı envanteri — ne kurulu, ne iş yapar.
+summary: The command-line inventory on this Mac — what's installed, what each tool does.
 kind: diagram
 tags: [cli, mac]
 status: published
@@ -11,20 +11,20 @@ sort: 10
 
 # CLI shelf
 
-2026-09-09'da `command -v` ile doğrulanan liste. Kurulumların tamamı
-Homebrew (`/opt/homebrew/bin`) + sistem ikilileri; `code` kurulu değil,
-`cloudflared` bu makinede yok (sunucu tarafında, apt ile).
+List verified with `command -v` on 2026-09-09. Everything is installed via
+Homebrew (`/opt/homebrew/bin`) plus system binaries; `code` is not installed,
+and `cloudflared` is absent on this machine (server-side, via apt).
 
 ```mermaid
 flowchart LR
-    subgraph pkg[Paket / runtime]
+    subgraph pkg[Packages / runtime]
         brew --> bun
     end
-    subgraph vcs[Kaynak + forge]
+    subgraph vcs[Source + forge]
         git --> gh
         git --> glab
     end
-    subgraph ops[Operasyon]
+    subgraph ops[Operations]
         ssh --> podman
         ssh --> age
         curl --> jq
@@ -33,22 +33,22 @@ flowchart LR
     bun --> omp
 ```
 
-| CLI | Ne yapar | Tipik kullanım |
+| CLI | What it does | Typical use |
 |---|---|---|
-| `brew` | Paket yöneticisi | Her şeyin kurulumu |
-| `bun` | JS runtime + paket yöneticisi | nors/skadi `bun run build`, scriptler |
-| `podman` | Container + VM | `hezarfen_backend` buildleri (makine 4 CPU / 6 GiB) |
-| `gh` | GitHub | Klon, release, repo açıklama/topic bakımı |
-| `glab` | GitLab CLI | Kurulu ama pasif — repo'lar GitHub'da |
-| `git` | VCS | Hepsi |
-| `jq` | JSON | API cevaplarını ayıklama |
-| `curl` | HTTP | PB `/api/health` yoklamaları, dosya indirme |
-| `sqlite3` | SQLite | `pb_data` incelemesi — her zaman **yerel kopyada** |
-| `rsync` | Dosya taşıma | Sunucuya dosya gönderme (`scp` ile birlikte) |
-| `age` | Şifreleme | `restore-kit` yedekleri |
-| `vim` / `nvim` | Terminal editör | Hızlı düzeltmeler |
-| `omp` | Agent harness CLI | Bu oturumların koştuğu zemin |
-| `ssh hetzner` | Sunucu erişimi | Alias → `178.105.131.189:2222`, kullanıcı `burak`, key ile |
+| `brew` | Package manager | Installing everything |
+| `bun` | JS runtime + package manager | nors/skadi `bun run build`, scripts |
+| `podman` | Containers + VMs | `hezarfen_backend` builds (machine: 4 CPUs / 6 GiB) |
+| `gh` | GitHub | Clone, release, repo description/topic maintenance |
+| `glab` | GitLab CLI | Installed but idle — repos live on GitHub |
+| `git` | VCS | Everything |
+| `jq` | JSON | Filtering API responses |
+| `curl` | HTTP | PB `/api/health` probes, file downloads |
+| `sqlite3` | SQLite | `pb_data` inspection — always **on a local copy** |
+| `rsync` | File transfer | Sending files to the server (together with `scp`) |
+| `age` | Encryption | `restore-kit` backups |
+| `vim` / `nvim` | Terminal editors | Quick fixes |
+| `omp` | Agent harness CLI | The ground these sessions run on |
+| `ssh hetzner` | Server access | Alias → `178.105.131.189:2222`, user `burak`, key-based |
 
-Sunucu tarafının kendi seti (`pocketbase`, `caddy`, `cloudflared`) ayrı —
-ayrıntı `penolox-server` notunda.
+The server side has its own set (`pocketbase`, `caddy`, `cloudflared`) —
+details in the `penolox-server` note.
