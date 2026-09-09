@@ -305,7 +305,7 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
           placeholder="Write your note here…"
           value={body()}
           onInput={(e) => setBody(e.currentTarget.value)}
-          rows="16"
+          rows="8"
         />
       </Show>
       <div class="edit-foot">

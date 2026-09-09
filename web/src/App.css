@@ -424,11 +424,12 @@ button.muted {
 .menu button {
   display: flex;
   width: 100%;
+  min-height: 0;
   background: transparent;
   color: var(--ink);
   font-weight: 500;
   border-radius: 6px;
-  padding: 0.55rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   text-align: left;
 }
 
@@ -448,7 +449,7 @@ button.muted {
 
 .menu-mail {
   margin: 0;
-  padding: 0.4rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   font-size: 0.8rem;
   color: var(--muted);
   overflow: hidden;
@@ -556,8 +557,8 @@ button.muted {
   justify-content: flex-end;
   margin-top: 1rem;
 }
-
 .editor textarea.doctext {
+  min-height: 22vh;
   width: 100%;
   background: transparent;
   border: 0;
@@ -566,7 +567,6 @@ button.muted {
   font-family: ui-monospace, monospace;
   font-size: 0.95rem;
   line-height: 1.65;
-  min-height: 45vh;
   resize: vertical;
   padding: 0.25rem 0;
 }
