@@ -16,21 +16,16 @@
 
 ---
 
-<div align="center">
-
-<img src="assets/screenshot-dash.png" alt="The dashboard: kind tabs and note cards with live summaries" width="760">
-
-<img src="assets/screenshot-reader.png" alt="The reader: markdown with a rendered Mermaid diagram" width="760">
-
-<img src="assets/screenshot-editor.png" alt="The editor: big title, kind pills, icon toolbar, Write/Preview" width="760">
-
-</div>
----
-
 Nors is not an application you deploy. It is one migration and one static
 page, copied into a PocketBase directory you already have. The database,
 auth, HTTP server and backups are already running — a dedicated notes app
 would duplicate all of them.
+
+<div align="center">
+
+<img src="assets/screenshot-dash.png" alt="Nors dashboard — note cards with kind tabs" width="760">
+
+</div>
 
 ## What it is
 
@@ -54,6 +49,12 @@ is nothing else to fill in.
 | 📥 | **Seeds are upserts** | `bun run import-seeds` matches by slug — re-running updates instead of duplicating. |
 | 🛡️ | **Unsaved work asks first** | Leaving the editor with edits pops a guard instead of silently dropping the draft. |
 | 📵 | **No telemetry** | Zero outbound requests. The page talks to your PocketBase and nothing else. |
+
+<div align="center">
+
+<img src="assets/screenshot-reader.png" alt="Nors reader — CLI shelf note with rendered Mermaid diagrams" width="760">
+
+</div>
 
 ## Footprint
 
