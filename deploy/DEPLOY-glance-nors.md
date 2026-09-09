@@ -1,6 +1,14 @@
 # Deploy — Glance Nors bookmark
 
-Agents do not SSH-write. Paste these on the Mac, one block at a time.
+Short version (wrap-proof, one password prompt):
+
+```bash
+ssh -t hetzner 'sudo bash /tmp/nors-glance-nors/apply.sh'
+```
+
+Expect: `nors.png` listed → `inserted Nors bookmark after line 288` →
+`active` + `200`. Then open Glance: **Apps → Live** shows Skadi + Nors.
+Details below; agents do not SSH-write, Burak pastes.
 Apply **after** the Nors UI deploy (`deploy/install.sh` + Access app for
 `/nors`) — before that `/nors/` is 404 and the bookmark is a dead link.
 
