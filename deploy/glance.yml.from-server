@@ -1,0 +1,498 @@
+server:
+  host: 127.0.0.1
+  port: 8081
+  proxied: true
+  assets-path: /opt/glance/assets
+
+pages:
+  - name: Home
+    columns:
+      - size: small
+        widgets:
+          - type: calendar
+            first-day-of-week: monday
+
+          - type: rss
+            title: Dev Feeds
+            limit: 12
+            collapse-after: 5
+            feeds:
+              - url: https://github.com/anthropics/claude-code/releases.atom
+                title: Claude Code
+              - url: https://blog.cloudflare.com/rss/
+                title: Cloudflare
+              - url: https://github.com/pocketbase/pocketbase/releases.atom
+                title: PocketBase
+              - url: https://github.com/caddyserver/caddy/releases.atom
+                title: Caddy
+              - url: https://github.com/glanceapp/glance/releases.atom
+                title: Glance
+              - url: https://github.com/oven-sh/bun/releases.atom
+                title: Bun
+              - url: https://github.com/cloudflare/cloudflared/releases.atom
+                title: cloudflared
+              - url: https://github.com/rclone/rclone/releases.atom
+                title: rclone
+              - url: https://github.com/FiloSottile/age/releases.atom
+                title: age
+
+          - type: server-stats
+            servers:
+              - type: local
+                name: penolox
+
+      - size: full
+        widgets:
+          - type: group
+            widgets:
+              - type: rss
+                title: News
+                style: detailed-list
+                limit: 25
+                collapse-after: 8
+                feeds:
+                  - url: https://feeds.bbci.co.uk/turkce/rss.xml
+                    title: BBC Turkce
+                  - url: https://www.hurriyet.com.tr/rss/gundem
+                    title: Hurriyet
+                  - url: https://www.cumhuriyet.com.tr/rss
+                    title: Cumhuriyet
+                  - url: https://www.haberturk.com/rss
+                    title: Haberturk
+                  - url: https://www.sozcu.com.tr/feeds-rss-category-sondakika
+                    title: Sozcu
+              - type: rss
+                title: More
+                style: vertical-list
+                limit: 25
+                collapse-after: 8
+                feeds:
+                  - url: https://www.ntv.com.tr/turkiye.rss
+                    title: NTV
+                  - url: https://www.trthaber.com/sondakika.rss
+                    title: TRT Haber
+                  - url: https://www.diken.com.tr/feed/
+                    title: Diken
+                  - url: https://www.gazeteduvar.com.tr/export/rss
+                    title: Gazete Duvar
+                  - url: https://www.milliyet.com.tr/rss/rssnew/gundemrss.xml
+                    title: Milliyet
+                  - url: https://www.indyturk.com/rss.xml
+                    title: Independent Turkce
+                  - url: https://rss.dw.com/rdf/rss-tur-all
+                    title: DW Turkce
+              - type: rss
+                title: Economy
+                style: vertical-list
+                limit: 25
+                collapse-after: 8
+                feeds:
+                  - url: https://www.bloomberght.com/rss
+                    title: Bloomberg HT
+                  - url: https://www.dunya.com/rss?dunya
+                    title: Dunya
+                  - url: https://www.ekonomim.com/rss
+                    title: Ekonomim
+                  - url: https://www.milliyet.com.tr/rss/rssnew/ekonomirss.xml
+                    title: Milliyet Ekonomi
+                  - url: https://www.trthaber.com/ekonomi_articles.rss
+                    title: TRT Ekonomi
+                  - url: https://www.sozcu.com.tr/feeds-rss-category-ekonomi
+                    title: Sozcu Ekonomi
+                  - url: https://tr.investing.com/rss/news.rss
+                    title: Investing
+              - type: rss
+                title: Sports
+                style: vertical-list
+                limit: 25
+                collapse-after: 8
+                feeds:
+                  - url: https://www.hurriyet.com.tr/rss/spor
+                    title: Hurriyet Spor
+                  - url: https://www.cumhuriyet.com.tr/rss/spor
+                    title: Cumhuriyet Spor
+                  - url: https://www.fotomac.com.tr/rss/anasayfa.xml
+                    title: Fotomac
+                  - url: https://www.ntvspor.net/rss/anasayfa
+                    title: NTV Spor
+                  - url: https://www.sabah.com.tr/rss/spor.xml
+                    title: Sabah Spor
+              - type: rss
+                title: Tech
+                style: vertical-list
+                limit: 25
+                collapse-after: 8
+                feeds:
+                  - url: https://webrazzi.com/feed
+                    title: Webrazzi
+                  - url: https://www.donanimhaber.com/rss/tum/
+                    title: DonanimHaber
+                  - url: https://shiftdelete.net/feed
+                    title: ShiftDelete
+                  - url: https://www.webtekno.com/rss.xml
+                    title: Webtekno
+                  - url: https://www.chip.com.tr/rss
+                    title: Chip
+                  - url: https://www.teknoblog.com/feed/
+                    title: Teknoblog
+                  - url: https://www.log.com.tr/feed/
+                    title: LOG
+                  - url: https://www.sihirlielma.com/feed/
+                    title: Sihirli Elma
+                  - url: https://www.technopat.net/feed/
+                    title: Technopat
+              - type: rss
+                title: Science
+                style: vertical-list
+                limit: 25
+                collapse-after: 8
+                feeds:
+                  - url: https://evrimagaci.org/rss.xml
+                    title: Evrim Agaci
+                  - url: https://www.indyturk.com/taxonomy/term/48791/%2A/feed
+                    title: Independent Bilim
+
+          - type: videos
+            channels:
+              - UCHnYG8F-N7mhzFrJ22iEdJg
+              - UCSsof6M4CRLgJ7Iy_ln6CCQ
+              - UCV0toS3JW9WoT7gJUuJvDog
+              - UCVBX2n_5egE9XuJL8NUS0Xg
+              - UCf6AGqO98eGk11nfazociVQ
+              - UCDGAg1pqcy8IScMqHHTy9Gg
+              - UCatnasFAiXUvWwH8NlSdd3A
+              - UC-WYOGea_uGoGL9tvoFv2GA
+              - UCWsudnBrEOJLQ1JpkdloxKg
+              - UCkVfrGwV-iG9bSsgCbrNPxQ
+              - UCyfmdbYiR9HEy9nEUX2DU5w
+
+      - size: small
+        widgets:
+          - type: weather
+            units: metric
+            hour-format: 24h
+            location: Kayseri
+
+          - type: markets
+            markets:
+              - symbol: XU100.IS
+                name: BIST 100
+              - symbol: XU030.IS
+                name: BIST 30
+              - symbol: ZPLIB.IS
+                name: ZPLIB
+              - symbol: ZPX30.IS
+                name: ZPX30
+              - symbol: USDTRY=X
+                name: USD/TRY
+              - symbol: EURTRY=X
+                name: EUR/TRY
+              - symbol: GC=F
+                name: Gold
+              - symbol: BTC-USD
+                name: Bitcoin
+              - symbol: ETH-USD
+                name: Ethereum
+              - symbol: VOO
+                name: VOO
+              - symbol: QQQM
+                name: QQQM
+
+
+  - name: Services
+    columns:
+      - size: small
+        widgets:
+          - type: monitor
+            title: Self-hosted
+            cache: 1m
+            sites:
+              - title: PocketBase
+                url: https://bbp.burakboduroglu.com.tr/_/
+                check-url: http://127.0.0.1:8090/api/health
+                icon: si:pocketbase
+              - title: PocketBase API
+                url: https://bbp.burakboduroglu.com.tr/api/health
+                check-url: https://bbp.burakboduroglu.com.tr/api/health
+                icon: si:pocketbase
+              - title: Glance
+                url: https://glance.burakboduroglu.com.tr/
+                check-url: http://127.0.0.1:8081/
+                icon: di:glance
+              - title: BDash
+                url: https://bdash.burakboduroglu.com.tr/
+                icon: /assets/bdash.png
+
+
+
+          # >>> subs-tracker (managed, do not hand-edit) >>>
+          - type: custom-api
+            title: Abonelikler
+            title-url: https://bbp.burakboduroglu.com.tr/subs/
+            cache: 30m
+            url: http://127.0.0.1:8090/api/subs/summary
+            template: |
+              <div class="flex justify-between text-center margin-bottom-15">
+                <div>
+                  <div class="color-highlight size-h3">{{ printf "%.0f" (.JSON.Float "monthly_net") }} ₺</div>
+                  <div class="size-h6">AYLIK NET</div>
+                </div>
+                <div>
+                  <div class="size-h3">{{ printf "%.0f" (.JSON.Float "yearly_net") }} ₺</div>
+                  <div class="size-h6">YILLIK</div>
+                </div>
+                <div>
+                  <div class="size-h3 color-positive">{{ printf "%.0f" (.JSON.Float "monthly_cashback") }} ₺</div>
+                  <div class="size-h6">CASHBACK</div>
+                </div>
+              </div>
+
+              {{ $upcoming := .JSON.Array "upcoming" }}
+              {{ if $upcoming }}
+              <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                {{ range $upcoming }}
+                <li class="flex items-center gap-10">
+                  {{ $logo := .String "logo" }}
+                  {{ if $logo }}
+                  <img class="shrink-0" src="{{ $logo }}" alt="" loading="lazy"
+                       style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px">
+                  {{ end }}
+                  <div class="grow text-truncate">
+                    <div class="text-truncate">{{ .String "name" }}</div>
+                    <div class="size-h6">
+                      {{ $d := .Int "days" }}
+                      {{ if .Bool "overdue" }}<span class="color-negative">gecikmiş</span>
+                      {{ else if eq $d 0 }}<span class="color-negative">bugün</span>
+                      {{ else if le $d 3 }}<span class="color-highlight">{{ $d }} gün</span>
+                      {{ else }}{{ $d }} gün{{ end }}
+                    </div>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <div>{{ printf "%.0f" (.Float "amount") }} {{ .String "currency" }}</div>
+                    {{ if gt (.Float "cashback") 0.0 }}
+                    <div class="size-h6 color-positive">−{{ printf "%.0f" (.Float "cashback") }}</div>
+                    {{ end }}
+                  </div>
+                </li>
+                {{ end }}
+              </ul>
+              {{ else }}
+              <p class="size-h6 color-subdue">45 gün içinde ödeme yok.</p>
+              {{ end }}
+
+              {{ if .JSON.Bool "fx_stale" }}
+              <p class="size-h6 color-negative margin-top-10">
+                Kur güncellenemedi{{ if .JSON.String "fx_date" }} — {{ .JSON.String "fx_date" }} kuru kullanıldı{{ end }}
+              </p>
+              {{ end }}
+              {{ if gt (.JSON.Int "unconverted") 0 }}
+              <p class="size-h6 color-negative margin-top-5">
+                {{ .JSON.Int "unconverted" }} kayıt kur bulunamadığı için toplama dahil edilmedi.
+              </p>
+              {{ end }}
+
+              <p class="margin-top-15 text-right">
+                <a href="https://bbp.burakboduroglu.com.tr/subs/?add=1" class="color-highlight size-h6">+ Abonelik ekle</a>
+              </p>
+          # <<< subs-tracker <<<
+
+      - size: full
+        widgets:
+          - type: bookmarks
+            title: Work
+            groups:
+              - title: Infrastructure
+                color: 13 60% 55%
+                links:
+                  - title: Hetzner
+                    url: https://console.hetzner.com/projects
+                    icon: si:hetzner
+                  - title: Cloudflare
+                    url: https://dash.cloudflare.com/e9bdd743b2850bff64fb314caa934574/home/overview
+                    icon: si:cloudflare
+                  - title: Modal
+                    url: https://modal.com/
+                    icon: si:modal
+                  - title: Kayizer
+                    url: https://kayizer.com/panel/index.php?rp=/login
+                    icon: /assets/kayizer.png
+
+              - title: Code
+                color: 210 60% 55%
+                links:
+                  - title: GitHub
+                    url: https://github.com/burakboduroglu
+                    icon: si:github
+                  - title: GitLab
+                    url: https://gitlab.com/burakboduroglu
+                    icon: si:gitlab
+                  - title: npm
+                    url: https://www.npmjs.com/~burakboduroglu
+                    icon: si:npm
+                  - title: Zed
+                    url: https://dashboard.zed.dev/org_01m09knb5hr81ne651ch721zhh
+                    icon: si:zedindustries
+                  - title: Kiro
+                    url: https://app.kiro.dev/home
+                    icon: /assets/kiro.svg
+                  - title: OpenCode
+                    url: https://opencode.ai/workspace/wrk_01KQN66Z8R63KAXV0EYC2FVBF4
+                    icon: di:opencode-dark
+                  - title: Expo
+                    url: https://expo.dev/
+                    icon: si:expo
+                  - title: Firecrawl
+                    url: https://www.firecrawl.dev/app
+                    icon: /assets/firecrawl.png
+                  - title: Brave Search
+                    url: https://api-dashboard.search.brave.com/app/dashboard
+                    icon: si:brave
+
+              - title: AI
+                color: 280 55% 60%
+                links:
+                  - title: Claude
+                    url: https://claude.ai/new
+                    icon: si:anthropic
+                  - title: ChatGPT
+                    url: https://chatgpt.com/
+                    icon: si:openai
+                  - title: Perplexity
+                    url: https://www.perplexity.ai/
+                    icon: si:perplexity
+                  - title: Grok
+                    url: https://grok.com/
+                    icon: di:grok-dark
+                  - title: Mistral
+                    url: https://chat.mistral.ai/work
+                    icon: di:mistral-ai
+                  - title: Hugging Face
+                    url: https://huggingface.co/penoloxai
+                    icon: si:huggingface
+                  - title: NVIDIA Build
+                    url: https://build.nvidia.com/explore/discover
+                    icon: si:nvidia
+                  - title: OpenRouter
+                    url: https://openrouter.ai/settings/profile
+                    icon: si:openrouter
+                  - title: Higgsfield AI
+                    url: https://higgsfield.ai/
+                    icon: /assets/higgsfield.png
+                  - title: Suno
+                    url: https://suno.com/discover
+                    icon: si:suno
+
+              - title: Design
+                color: 330 60% 60%
+                links:
+                  - title: Figma
+                    url: https://www.figma.com/files/team/1675591082121423107/drafts
+                    icon: si:figma
+                  - title: Canva
+                    url: https://www.canva.com/
+                    icon: si:canva
+                  - title: Framer
+                    url: https://www.framer.com/
+                    icon: si:framer
+                  - title: Lovable
+                    url: https://lovable.dev/dashboard
+                    icon: /assets/lovable.png
+
+              - title: Finance
+                color: 150 50% 45%
+                links:
+                  - title: TradingView
+                    url: https://tr.tradingview.com/
+                    icon: si:tradingview
+                  - title: Fintables
+                    url: https://fintables.com/
+                    icon: /assets/fintables.png
+
+          - type: bookmarks
+            title: Personal
+            groups:
+              - title: Mail
+                color: 195 55% 50%
+                links:
+                  - title: Gmail
+                    url: https://mail.google.com/
+                    icon: si:gmail
+                  - title: Outlook
+                    url: https://outlook.live.com/mail/
+                    icon: di:microsoft-outlook
+                  - title: Proton Mail
+                    url: https://mail.proton.me/
+                    icon: si:protonmail
+                  - title: Tuta
+                    url: https://app.tuta.com/
+                    icon: si:tuta
+
+              - title: Social
+                color: 250 55% 62%
+                links:
+                  - title: X
+                    url: https://x.com/
+                    icon: si:x
+                  - title: WhatsApp
+                    url: https://web.whatsapp.com/
+                    icon: si:whatsapp
+                  - title: Element
+                    url: https://app.element.io/
+                    icon: si:element
+                  - title: Discord
+                    url: https://discord.com/channels/@me
+                    icon: si:discord
+                  - title: Reddit
+                    url: https://www.reddit.com/
+                    icon: si:reddit
+                  - title: Substack
+                    url: https://substack.com/
+                    icon: si:substack
+                  - title: dev.to
+                    url: https://dev.to/
+                    icon: si:devdotto
+                  - title: Medium
+                    url: https://medium.com/
+                    icon: si:medium
+
+              - title: Media
+                color: 0 55% 58%
+                links:
+                  - title: Spotify
+                    url: https://open.spotify.com/
+                    icon: si:spotify
+                  - title: Netflix
+                    url: https://www.netflix.com/tr/
+                    icon: si:netflix
+                  - title: Disney+
+                    url: https://www.disneyplus.com/tr-tr
+                    icon: di:disney-plus
+                  - title: Prime Video
+                    url: https://www.primevideo.com/
+                    icon: di:prime-video
+                  - title: HBO Max
+                    url: https://play.hbomax.com/
+                    icon: di:hbo-light
+                  - title: Kick
+                    url: https://kick.com/
+                    icon: si:kick
+
+              - title: Learning
+                color: 45 60% 50%
+                links:
+                  - title: Udemy
+                    url: https://www.udemy.com/
+                    icon: si:udemy
+                  - title: Coursera
+                    url: https://www.coursera.org/
+                    icon: si:coursera
+
+              - title: Games
+                color: 100 40% 48%
+                links:
+                  - title: Chess.com
+                    url: https://www.chess.com/
+                    icon: si:chessdotcom
+                  - title: Lichess
+                    url: https://lichess.org/
+                    icon: si:lichess
