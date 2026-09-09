@@ -5,9 +5,11 @@
 # Idempotent: patch re-run is a no-op, install/restart are safe to repeat.
 set -euo pipefail
 
-install -m 644 /tmp/nors-glance-nors/nors-mark-512.png /opt/glance/assets/nors.png
+STAGE="${1:-/tmp/nors-glance-nors}"
+
+install -m 644 "$STAGE/nors-mark-512.png" /opt/glance/assets/nors.png
 ls -la /opt/glance/assets/nors.png
-python3 /tmp/nors-glance-nors/patch-glance-nors.py
+python3 "$STAGE/patch-glance-nors.py"
 systemctl restart glance
 sleep 1
 systemctl is-active glance
