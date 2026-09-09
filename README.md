@@ -1,25 +1,59 @@
+<div align="center">
+
+<img src="assets/nors-mark-512.png" alt="Nors mark" width="112">
+
 # Nors
 
-Personal ops notes that ride an existing PocketBase. Norse-named (not `opsnotes`).
+**Personal ops notes that ride a PocketBase instance you already run.**
+
+[![License](https://img.shields.io/github/license/burakboduroglu/nors?style=flat-square)](LICENSE)
+![Self-hosted](https://img.shields.io/badge/self--hosted-only-000?style=flat-square)
+![No telemetry](https://img.shields.io/badge/telemetry-none-000?style=flat-square)
+![No Docker](https://img.shields.io/badge/Docker-not_required-000?style=flat-square&logo=docker)
+![Bun](https://img.shields.io/badge/Bun-runtime-000?style=flat-square&logo=bun)
+
+</div>
+
+---
+
+<div align="center">
+
+<img src="assets/screenshot-dash.png" alt="The dashboard: kind tabs and note cards with live summaries" width="760">
+
+<img src="assets/screenshot-reader.png" alt="The reader: markdown with a rendered Mermaid diagram" width="760">
+
+<img src="assets/screenshot-editor.png" alt="The editor: big title, kind pills, icon toolbar, Write/Preview" width="760">
+
+</div>
+---
+
+Nors is not an application you deploy. It is one migration and one static
+page, copied into a PocketBase directory you already have. The database,
+auth, HTTP server and backups are already running — a dedicated notes app
+would duplicate all of them.
 
 ## What it is
 
-Not an application you deploy: one migration, a static page, and three seed
-notes that you copy into a PocketBase you already run. No container, no second
-database, no extra port — the database, auth, HTTP server and backups are
-already there. Notes are cards on a dashboard; an agent drafts, you publish.
-Bodies are markdown with Mermaid fences, quoted in the reader on demand.
+Notes live as cards on a dashboard, filed under four kinds: Diagram, Runbook,
+Reference, Scratch. An agent drafts in markdown, you publish from the panel —
+paste a blob, fix the title, pick a kind, done. Bodies render as markdown and
+Mermaid fences become diagrams in the reader.
+
+Writing stays minimal on purpose: title, kind, pinned, body. The slug grows
+out of the title and the summary out of the first clean body line, so there
+is nothing else to fill in.
 
 ## Highlights
 
-- Dashboard with kind tabs (Diagram / Runbook / Reference / Scratch), pinning,
-  and native HTML5 drag-and-drop reorder — no DnD library.
-- Reader renders markdown; Mermaid loads only when a fence is present.
-- Editor in the dev.to arrangement: big title, kind pills, icon toolbar,
-  Write/Preview, autoslug and auto-summary — title, kind, pinned and body is
-  all you ever type.
-- Dirty guard asks before navigating away from unsaved edits.
-- 44 px touch targets, visible focus, reduced-motion respected.
+|     | Feature | How it works |
+| --- | ------- | ------------ |
+| 🧩 | **No infrastructure of its own** | Files copied into an existing PocketBase. No container, no second database, no extra port. |
+| 📝 | **Write four things, nothing else** | Title, kind, pinned, body. Slug and summary derive themselves. |
+| 📊 | **Diagrams without a plugin** | Mermaid loads only on pages that hold a fence; everything else never downloads it. |
+| ↔️ | **Order by dragging** | Native HTML5 drag-and-drop renumbers `sort`; pinned cards stay first by construction. No DnD library. |
+| 📥 | **Seeds are upserts** | `bun run import-seeds` matches by slug — re-running updates instead of duplicating. |
+| 🛡️ | **Unsaved work asks first** | Leaving the editor with edits pops a guard instead of silently dropping the draft. |
+| 📵 | **No telemetry** | Zero outbound requests. The page talks to your PocketBase and nothing else. |
 
 ## Footprint
 
@@ -29,7 +63,7 @@ Measured with `du`:
 | --- | --- |
 | Installed files | **3.5 MB** — migration 4 KB, page the rest |
 | First visit | **~87 KB** — entry JS ~79 KB (gzip ~24 KB), CSS ~7.5 KB |
-| The other 3.4 MB | Mermaid diagram chunks, fetched only when a reader page holds a ` ```mermaid ` fence |
+| The other 3.4 MB | Mermaid diagram chunks, fetched only when a reader page holds a fence |
 | Database growth | one `nors_notes` row per note, inside the existing `pb_data` |
 | Extra processes | none |
 | Extra ports | none |
@@ -59,8 +93,6 @@ NORS_PB_URL=https://your.host NORS_PB_EMAIL=... NORS_PB_PASSWORD=... \
   bun run import-seeds
 ```
 
-The import is an upsert by slug — safe to re-run.
-
 ## How it works
 
 ```
@@ -70,16 +102,15 @@ agent   ──▶ drafts markdown ──▶ editor ──▶ publish
 ```
 
 Routes are hashes: `#/` dashboard, `#/n/<slug>` reader,
-`#/edit/<slug|$new>` editor. Slug and summary derive themselves — the slug
-from the title, the summary from the first clean body line.
+`#/edit/<slug|$new>` editor.
 
 ## Security
 
 The `nors_notes` collection has null API rules, which in PocketBase means
-superuser only. The dashboard holds a superuser token in localStorage — the
-same tradeoff Skadi makes, documented rather than hidden: anyone with the
-browser profile has the keys. There is no audit log and no second user; this
-is a single-operator surface behind Cloudflare Access, not a multi-user app.
+superuser only. The dashboard holds a superuser token in localStorage — anyone
+with the browser profile has the keys, documented rather than hidden. There is
+no audit log and no second user; this is a single-operator surface behind
+Cloudflare Access, not a multi-user app.
 
 ## What it deliberately does not do
 
