@@ -1,0 +1,101 @@
+.mermaid-frame {
+  width: min(calc(100vw - 2rem), 960px);
+  margin: 2rem 0 2rem 50%;
+  overflow: hidden;
+  transform: translateX(-50%);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 52%),
+    var(--panel);
+}
+
+.mermaid-bar {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0.85rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.mermaid-label {
+  color: var(--tint);
+}
+
+.mermaid-hint {
+  display: none;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+
+.mermaid-frame.can-scroll .mermaid-hint {
+  display: inline;
+}
+
+.mermaid-viewport {
+  --mermaid-width: 100%;
+  max-width: 100%;
+  padding: clamp(1rem, 3vw, 2rem);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: color-mix(in srgb, var(--accent) 40%, var(--line)) transparent;
+  scrollbar-width: thin;
+}
+
+.mermaid-viewport:focus-visible {
+  outline-offset: -3px;
+}
+
+.mermaid-viewport svg {
+  display: block;
+  width: max(100%, var(--mermaid-width)) !important;
+  max-width: none !important;
+  height: auto !important;
+  margin: 0 auto;
+}
+
+.mermaid-viewport .nodeLabel,
+.mermaid-viewport .edgeLabel,
+.mermaid-viewport .label,
+.mermaid-viewport text {
+  font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif !important;
+}
+
+.mermaid-viewport .edgeLabel {
+  color: var(--ink) !important;
+  background: var(--panel) !important;
+}
+
+.mermaid-frame.has-error .mermaid-hint {
+  display: none;
+}
+
+.mermaid-error {
+  margin: 0 0 0.75rem;
+  color: var(--danger) !important;
+  font-size: 0.85rem;
+}
+
+.mermaid-frame.has-error pre {
+  margin: 0;
+  background: var(--bg);
+}
+
+@media (max-width: 600px) {
+  .mermaid-frame {
+    width: calc(100vw - 1.8rem);
+    margin-block: 1.5rem;
+  }
+
+  .mermaid-viewport {
+    padding: 1rem;
+  }
+}

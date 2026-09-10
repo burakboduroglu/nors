@@ -65,14 +65,17 @@ const Editor: Component<{ slug: string; onExpired: () => void }> = (props) => {
 const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (props) => {
   const n = () => props.initial
   const [title, setTitle] = createSignal(n().title)
+  const [slug, setSlug] = createSignal(n().slug)
+  const [tags, setTags] = createSignal(n().tags.join(', '))
   const [body, setBody] = createSignal(n().body)
   const [kind, setKind] = createSignal(n().kind)
   const [pinned, setPinned] = createSignal(n().pinned)
   const [tab, setTab] = createSignal<'write' | 'preview'>('write')
-  const snapshot = () => JSON.stringify([title(), body(), kind(), pinned()])
+  const snapshot = () => JSON.stringify([title(), slug(), tags(), body(), kind(), pinned()])
   let base = snapshot()
   let armed = true
   let prevHash = location.hash
+  let slugEdited = Boolean(n().id)
 
   onMount(() => {
     const onHash = () => {
@@ -168,16 +171,20 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
       .slice(0, 160)
   }
 
+  function parseTags(value: string): string[] {
+    return [...new Set(value.split(',').map((tag) => tag.trim().replace(/^#+/, '')).filter(Boolean))]
+  }
+
   function collect(status: 'draft' | 'published'): NoteInput {
     const fresh = !n().id
     const heading = title().trim()
     return {
       title: heading,
-      slug: fresh ? slugify(heading) || 'note' : n().slug,
+      slug: slug().trim(),
       summary: fresh ? deriveSummary(body()) : n().summary,
       body: body(),
       kind: kind(),
-      tags: fresh ? [] : n().tags,
+      tags: parseTags(tags()),
       pinned: pinned(),
       status,
       sort: n().sort,
@@ -186,6 +193,10 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
 
   async function onSave(status: 'draft' | 'published') {
     if (!title().trim()) return setErr('Title is required.')
+    if (!slug().trim()) return setErr('Slug is required.')
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug().trim())) {
+      return setErr('Slug can only contain lowercase letters, numbers, and single hyphens.')
+    }
     const input = collect(status)
     setBusy(true)
     setErr('')
@@ -239,10 +250,41 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
         class="doctitle"
         placeholder="New note title…"
         value={title()}
-        onInput={(e) => setTitle(e.currentTarget.value)}
+        onInput={(e) => {
+          const value = e.currentTarget.value
+          setTitle(value)
+          if (!slugEdited) setSlug(slugify(value))
+        }}
         maxlength="160"
         required
       />
+      <div class="note-meta-fields">
+        <label>
+          <span>Slug</span>
+          <input
+            value={slug()}
+            placeholder="note-url"
+            maxlength="80"
+            spellcheck={false}
+            required
+            onInput={(e) => {
+              slugEdited = true
+              setSlug(e.currentTarget.value.toLowerCase())
+            }}
+          />
+          <small>Used in the note URL and on its dashboard card.</small>
+        </label>
+        <label>
+          <span>Tags</span>
+          <input
+            value={tags()}
+            placeholder="server, cli, mac"
+            spellcheck={false}
+            onInput={(e) => setTags(e.currentTarget.value)}
+          />
+          <small>Separate tags with commas.</small>
+        </label>
+      </div>
       <div class="tabs kindpills">
         <For each={NOTE_KINDS}>
           {(k) => (

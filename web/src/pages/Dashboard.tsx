@@ -169,7 +169,17 @@ const Dashboard: Component<{ onExpired: () => void }> = (props) => {
               <a class="card-link" draggable={false} href={`#/n/${encodeURIComponent(n.slug)}`}>
                 <div class="card-top">
                   <span class="kind">{KIND_LABELS[n.kind]}</span>
-                  <span class="status">{n.status}</span>
+                  <span class="card-flags">
+                    <span class="status">{n.status}</span>
+                    <Show when={n.pinned}>
+                      <span class="card-pin" title="Pinned" aria-label="Pinned">
+                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M8 3h8l-1 8 3 3v2H6v-2l3-3z" />
+                          <line x1="12" y1="16" x2="12" y2="21" />
+                        </svg>
+                      </span>
+                    </Show>
+                  </span>
                 </div>
                 <h3>{n.title}</h3>
                 <p>{n.summary || '—'}</p>
