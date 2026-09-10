@@ -53,7 +53,7 @@ flowchart TB
 |---|---:|---|---|
 | `portkill` | **0.4.6** | yes | Port process CLI. |
 | `penote` | **3.0.1** | no | Zero-dependency programming-notes CLI and Web UI. |
-| `skadi` | **0.1.4** | no | Installer CLI for the PocketBase subscription tracker. Source and npm are current; the server still runs the pre-Skadi `/subs/` app. |
+| `skadi` | **0.1.4** | no | Installer CLI for the PocketBase subscription tracker. Source, npm and the live `/subs/` deployment are current. |
 | `nors` | **0.1.3** | no | Installer CLI for Nors. Source and npm are current. |
 
 MacShelf **0.2.0** belongs to the same product shelf but is a native menu-bar

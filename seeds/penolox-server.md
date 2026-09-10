@@ -22,7 +22,7 @@ flowchart TB
     tunnel --> caddy[Caddy<br>127.0.0.1:8080]
     caddy --> pb[PocketBase 0.40.2<br>127.0.0.1:8090]
     pb --> admin["/_/ admin"]
-    pb --> oldsubs["/subs/ legacy tracker"]
+    pb --> skadi["/subs/ Skadi 0.1.4"]
     pb --> nors["/nors/ ops notes"]
     pb --> data[(pb_data)]
     glance[Glance<br>127.0.0.1:8081] --> hooks[loopback summary hooks]
@@ -35,8 +35,8 @@ flowchart TB
 |---|---|
 | PocketBase admin `/_/` | Live behind Cloudflare Access. |
 | Nors `/nors/` | Live behind Access with three published notes. Source, npm and the deployed frontend are current at **0.1.3**. |
-| Subscription tracker `/subs/` | Live, but it is the original single-file tracker — **Skadi has never been deployed here**. |
-| Skadi | Source and npm are **0.1.4**; not the app currently served at `/subs/`. |
+| Skadi `/subs/` | **0.1.4** is live. Its HTML, JavaScript and CSS match the clean release checkout byte for byte. |
+| Skadi source/npm | GitHub tag and npm `latest` are **0.1.4**. |
 | Glance | Separate systemd service; Apps contains subscription and Nors summaries plus the Nors bookmark. |
 
 ## Request path and boundaries
