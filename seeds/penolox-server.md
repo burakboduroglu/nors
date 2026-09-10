@@ -1,61 +1,81 @@
 ---
-title: penolox-server
+title: penolox-server — live map
 slug: penolox-server
-summary: Request path of the Hetzner box — edge, tunnel, Caddy, PocketBase.
-kind: diagram
-tags: [server, hetzner]
+summary: What the Hetzner box runs, what is actually deployed, and how it is protected and restored.
+kind: runbook
+tags: [server, hetzner, pocketbase]
 status: published
-pinned: false
+pinned: true
 sort: 20
 ---
 
-# penolox-server
+# penolox-server — live map
 
-Hetzner KVM, Debian 13, 2 vCPU, 3.7 GiB RAM. First real workload:
-Caddy + PocketBase behind a Cloudflare Tunnel. No Docker, no PaaS.
-(Facts from the 2026-09-08 inventory; versions go stale over time.)
+Hetzner KVM running Debian 13: **2 vCPU, 3.7 GiB RAM, 38 GiB disk and
+2 GiB swap**. Checked on **2026-09-10**. No Docker and no PaaS; the shared
+PocketBase process is the application platform.
 
 ```mermaid
 flowchart TB
-    net((internet)) --> edge[Cloudflare edge<br>TLS + WAF + Access PIN]
-    edge --> tun[cloudflared tunnel `penolox`]
-    tun --> caddy[Caddy 127.0.0.1:8080<br>auto_https off, bind loopback]
-    caddy --> pb[PocketBase 127.0.0.1:8090<br>/opt/pocketbase]
+    net((internet)) --> edge[Cloudflare<br>TLS · WAF · Access]
+    edge --> tunnel[cloudflared<br>tunnel: penolox]
+    tunnel --> caddy[Caddy<br>127.0.0.1:8080]
+    caddy --> pb[PocketBase 0.40.2<br>127.0.0.1:8090]
+    pb --> admin["/_/ admin"]
+    pb --> oldsubs["/subs/ legacy tracker"]
+    pb --> nors["/nors/ ops notes"]
     pb --> data[(pb_data)]
-    pb --> pub[pb_public/<br>subs/ + nors/]
-    pb --> hooks[pb_hooks<br>summary endpoints]
+    glance[Glance<br>127.0.0.1:8081] --> hooks[loopback summary hooks]
+    hooks --> pb
 ```
 
-## Parts
+## What is actually live
 
-- **PocketBase** (v0.40.2) — `/opt/pocketbase/pocketbase` (root),
-  data at `/opt/pocketbase/pb_data` (`pocketbase` user).
-  systemd unit `pocketbase.service`, `ProtectSystem=strict`.
-- **Caddy** — the box's web front; reverse proxy to PB, `redir / /_/`.
-  The site address must be the real hostname (the tunnel carries the
-  original `Host`). Without `bind 127.0.0.1` it listens on `*:8080` —
-  left exposed.
-- **cloudflared** — service under `/etc/cloudflared/`;
-  `cloudflared-update.timer` updates itself every night at 00:00.
-- **Cloudflare Access** — `/_/` and app paths closed behind a one-time
-  PIN (burakboduroglu0@gmail.com). For Nors, `/nors` +
-  `/api/collections/nors_notes` targets are required.
-- **Collections** — `subscriptions` + `fx_rates` (Skadi),
-  `nors_notes` (this panel). All three superuser-only.
+| Surface | State |
+|---|---|
+| PocketBase admin `/_/` | Live behind Cloudflare Access. |
+| Nors `/nors/` | Live behind Access with three published notes. Source, npm and the deployed frontend are current at **0.1.3**. |
+| Subscription tracker `/subs/` | Live, but it is the original single-file tracker — **Skadi has never been deployed here**. |
+| Skadi | Source and npm are **0.1.4**; not the app currently served at `/subs/`. |
+| Glance | Separate systemd service; Apps contains subscription and Nors summaries plus the Nors bookmark. |
 
-## Scheduled jobs
+## Request path and boundaries
 
-- `restore-kit.timer` 03:30 UTC — age-encrypted backup to
-  `/var/backups/penolox`; the Mac pulls it to iCloud at 07:30.
-  New rows land in the same `pb_data`, no extra target.
-- `unattended-upgrades` — security only, reboots at 04:00 if needed.
+- Cloudflare owns public TLS, WAF and Access. The tunnel carries the original
+  hostname to Caddy.
+- Caddy must use the real hostname and `bind 127.0.0.1`; a loopback site label
+  does not match tunneled traffic, while omitting `bind` exposes port 8080.
+- PocketBase data lives in `/opt/pocketbase/pb_data` under the `pocketbase`
+  system user. Collections are superuser-only.
+- The Nors and subscription summary endpoints are for Glance over loopback;
+  exact public routes are blocked at Caddy.
 
-## Access and deploy rules
+## Access
 
-- SSH: `ssh hetzner` → `178.105.131.189:2222`, `burak`, key.
-  `sudo` asks for a password — the agent can look, not manage.
-- PB deploy order is **stop → copy → start**; `restart` over
-  hooks/migrations hangs for 90 seconds (until SIGKILL, the old
-  process keeps serving).
-- Edge rate limit: `/api/collections/_superusers*` 5 requests per
-  10 seconds. Paste when attempting login, don't force it.
+```text
+ssh hetzner
+└─ SSH config alias · non-default port · user burak · key-only
+```
+
+Interactive `ssh hetzner` uses Mosh from the Mac. `burak` has sudo, but sudo
+requires a password. Agents inspect remotely; Burak performs server writes.
+
+## Deploy rules
+
+1. Build on the Mac; do not build on this small server.
+2. Stage and copy the exact build, migration and hook files.
+3. For PocketBase changes use **stop → copy → start**. Updating hooks and then
+   calling `restart` can hang for the full 90-second stop timeout.
+4. Verify the running service, loopback HTTP response and public Access route;
+   configuration text alone is not proof.
+
+## Recovery
+
+- `restore-kit.timer` creates an age-encrypted PocketBase restore kit at
+  03:30 UTC.
+- The kit is copied off the box to R2; `~/bin/penolox-drill.sh` on the Mac
+  downloads the newest kit, decrypts it and runs SQLite integrity checks.
+- `unattended-upgrades` is security-only, with reboot at 04:00 when required.
+
+The box is intentionally simple: one tunnel, one web front, one PocketBase,
+one Glance process, and recoverable data.
