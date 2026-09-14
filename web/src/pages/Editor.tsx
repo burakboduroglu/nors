@@ -1,7 +1,7 @@
 import { createEffect, createResource, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js'
 import type { Component } from 'solid-js'
 import { renderMarkdown, runMermaidDiagrams } from '../lib/md'
-import { KIND_LABELS, NOTE_KINDS, getNote, saveNote } from '../lib/pb'
+import { KIND_LABELS, NOTE_KINDS, getNote, getToken, saveNote } from '../lib/pb'
 import type { NoteInput, NorsNote } from '../lib/pb'
 import { go, NEW_SLUG } from '../lib/route'
 import Toast from '../components/Toast'
@@ -18,6 +18,24 @@ function slugify(title: string): string {
 }
 
 const MOD_KEY = /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘' : 'Ctrl'
+
+// Unsaved edits survive a sign-out: when the session ends mid-edit the form unmounts,
+// so its fields are parked here and handed back once the same note opens again.
+type Stash = { id: string; title: string; slug: string; tags: string; body: string; kind: NorsNote['kind']; pinned: boolean }
+const STASH_PREFIX = 'nors_unsaved:'
+
+function takeStash(route: string, id: string): Stash | null {
+  const key = STASH_PREFIX + route
+  const raw = sessionStorage.getItem(key)
+  sessionStorage.removeItem(key)
+  if (!raw) return null
+  try {
+    const stash = JSON.parse(raw) as Stash
+    return stash.id === id ? stash : null
+  } catch {
+    return null
+  }
+}
 
 function blank(): NorsNote {
   return {
@@ -59,26 +77,33 @@ const Editor: Component<{ slug: string; onExpired: () => void }> = (props) => {
         <LoadingBlock label="Loading note" />
       </Show>
       <Show when={existing()}>
-        {(n) => <EditorForm initial={n()} onExpired={props.onExpired} />}
+        {(n) => <EditorForm route={props.slug} initial={n()} onExpired={props.onExpired} />}
       </Show>
     </main>
   )
 }
 
-const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (props) => {
+const EditorForm: Component<{ route: string; initial: NorsNote; onExpired: () => void }> = (props) => {
   const n = () => props.initial
-  const [title, setTitle] = createSignal(n().title)
-  const [slug, setSlug] = createSignal(n().slug)
-  const [tags, setTags] = createSignal(n().tags.join(', '))
-  const [body, setBody] = createSignal(n().body)
-  const [kind, setKind] = createSignal(n().kind)
-  const [pinned, setPinned] = createSignal(n().pinned)
+  const stash = takeStash(props.route, n().id)
+  const [title, setTitle] = createSignal(stash?.title ?? n().title)
+  const [slug, setSlug] = createSignal(stash?.slug ?? n().slug)
+  const [tags, setTags] = createSignal(stash?.tags ?? n().tags.join(', '))
+  const [body, setBody] = createSignal(stash?.body ?? n().body)
+  const [kind, setKind] = createSignal(stash?.kind ?? n().kind)
+  const [pinned, setPinned] = createSignal(stash?.pinned ?? n().pinned)
   const [tab, setTab] = createSignal<'write' | 'preview'>('write')
   const snapshot = () => JSON.stringify([title(), slug(), tags(), body(), kind(), pinned()])
-  let base = snapshot()
+  let base = JSON.stringify([n().title, n().slug, n().tags.join(', '), n().body, n().kind, n().pinned])
   let armed = true
   let prevHash = location.hash
-  let slugEdited = Boolean(n().id)
+  let slugEdited = Boolean(n().id) || Boolean(stash)
+
+  onCleanup(() => {
+    if (getToken() || snapshot() === base) return
+    const parked: Stash = { id: n().id, title: title(), slug: slug(), tags: tags(), body: body(), kind: kind(), pinned: pinned() }
+    sessionStorage.setItem(STASH_PREFIX + props.route, JSON.stringify(parked))
+  })
 
   onMount(() => {
     const onHash = () => {
@@ -308,6 +333,9 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
           </svg>
         </button>
       </nav>
+      <Show when={stash}>
+        <div class="draft-notice">Restored your unsaved changes from before you were signed out.</div>
+      </Show>
       <input
         class="doctitle"
         placeholder="New note title…"

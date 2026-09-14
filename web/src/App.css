@@ -1133,3 +1133,7 @@ button.icononly.spinning svg {
     flex-basis: 100%;
   }
 }
+
+.editor > .draft-notice {
+  margin: 0 0 1rem;
+}

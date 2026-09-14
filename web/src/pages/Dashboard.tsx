@@ -65,6 +65,7 @@ const Dashboard: Component<{ onExpired: () => void }> = (props) => {
       )
       await refetch()
     } catch (e) {
+      if (e instanceof Error && e.message === 'session expired') return props.onExpired()
       setErr(e instanceof Error ? e.message : String(e))
       await refetch()
     } finally {

@@ -1,6 +1,6 @@
 import { createSignal, onCleanup, onMount, Show } from 'solid-js'
 import type { Component } from 'solid-js'
-import { clearSession, getToken, login } from './lib/pb'
+import { clearSession, getToken, login, SESSION_EXPIRED } from './lib/pb'
 import { go, NEW_SLUG, useRoute } from './lib/route'
 import Dashboard from './pages/Dashboard'
 import Reader from './pages/Reader'
@@ -30,9 +30,11 @@ const App: Component = () => {
     }
     document.addEventListener('click', outside)
     document.addEventListener('keydown', esc)
+    window.addEventListener(SESSION_EXPIRED, bye)
     onCleanup(() => {
       document.removeEventListener('click', outside)
       document.removeEventListener('keydown', esc)
+      window.removeEventListener(SESSION_EXPIRED, bye)
     })
   })
 

@@ -43,8 +43,54 @@ export function clearSession(): void {
   localStorage.removeItem(USER_KEY)
 }
 
+/** Fired on window when PocketBase rejects the stored token; App returns to login. */
+export const SESSION_EXPIRED = 'nors:session-expired'
+
+const ACCESS_RELOAD_KEY = 'nors_access_reload'
+
+/**
+ * fetch that survives Cloudflare Access. An expired Access session answers API
+ * calls with a cross-origin redirect to the Access login, which fetch cannot
+ * follow; reloading lets the browser run that login. The pending promise never
+ * settles so callers show no error toast in the moment before the reload.
+ */
+async function edgeFetch(path: string, init: RequestInit): Promise<Response> {
+  const res = await fetch(`${baseUrl()}${path}`, { ...init, redirect: 'manual' })
+  if (res.type === 'opaqueredirect') {
+    // Reload once; if Access still redirects right after, stop instead of looping.
+    const last = Number(sessionStorage.getItem(ACCESS_RELOAD_KEY) || 0)
+    if (Date.now() - last < 30_000) throw new Error('Cloudflare Access session expired. Reload the page to sign in again.')
+    sessionStorage.setItem(ACCESS_RELOAD_KEY, String(Date.now()))
+    location.reload()
+    return new Promise<Response>(() => {})
+  }
+  return res
+}
+
+/**
+ * Authenticated request. PocketBase treats a missing or expired token as a guest,
+ * and the superuser-only nors_notes collection answers guests with 403, not 401,
+ * so both codes mean the session is over.
+ */
+async function authed(path: string, init: RequestInit = {}): Promise<Response> {
+  const token = getToken()
+  if (!token) return expire()
+  const res = await edgeFetch(path, {
+    ...init,
+    headers: { Authorization: token, 'Content-Type': 'application/json' },
+  })
+  if (res.status === 401 || res.status === 403) return expire()
+  return res
+}
+
+function expire(): never {
+  clearSession()
+  window.dispatchEvent(new Event(SESSION_EXPIRED))
+  throw new Error('session expired')
+}
+
 export async function login(email: string, password: string): Promise<void> {
-  const res = await fetch(`${baseUrl()}/api/collections/_superusers/auth-with-password`, {
+  const res = await edgeFetch('/api/collections/_superusers/auth-with-password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ identity: email, password }),
@@ -58,15 +104,6 @@ export async function login(email: string, password: string): Promise<void> {
   localStorage.setItem(USER_KEY, JSON.stringify(data.record))
 }
 
-function authHeaders(): HeadersInit {
-  const token = getToken()
-  if (!token) throw new Error('not authenticated')
-  return {
-    Authorization: token,
-    'Content-Type': 'application/json',
-  }
-}
-
 export async function listNotes(opts?: { includeDrafts?: boolean }): Promise<NorsNote[]> {
   const filter = opts?.includeDrafts
     ? 'status != "archived"'
@@ -76,26 +113,14 @@ export async function listNotes(opts?: { includeDrafts?: boolean }): Promise<Nor
     sort: '-pinned,sort,updated',
     perPage: '200',
   })
-  const res = await fetch(`${baseUrl()}/api/collections/nors_notes/records?${params}`, {
-    headers: authHeaders(),
-  })
-  if (res.status === 401) {
-    clearSession()
-    throw new Error('session expired')
-  }
+  const res = await authed(`/api/collections/nors_notes/records?${params}`)
   if (!res.ok) throw new Error(`list failed (${res.status})`)
   const data = (await res.json()) as { items: Array<Record<string, unknown>> }
   return data.items.map(normalize)
 }
 export async function getNote(slug: string): Promise<NorsNote> {
   const params = new URLSearchParams({ filter: `slug = "${slug}"` })
-  const res = await fetch(`${baseUrl()}/api/collections/nors_notes/records?${params}`, {
-    headers: authHeaders(),
-  })
-  if (res.status === 401) {
-    clearSession()
-    throw new Error('session expired')
-  }
+  const res = await authed(`/api/collections/nors_notes/records?${params}`)
   if (!res.ok) throw new Error(`get failed (${res.status})`)
   const data = (await res.json()) as { items: Array<Record<string, unknown>> }
   if (data.items.length === 0) throw new Error(`no note: ${slug}`)
@@ -115,15 +140,10 @@ export type NoteInput = {
 }
 
 export async function saveNote(input: NoteInput, id?: string): Promise<NorsNote> {
-  const res = await fetch(`${baseUrl()}/api/collections/nors_notes/records${id ? `/${id}` : ''}`, {
+  const res = await authed(`/api/collections/nors_notes/records${id ? `/${id}` : ''}`, {
     method: id ? 'PATCH' : 'POST',
-    headers: authHeaders(),
     body: JSON.stringify(input),
   })
-  if (res.status === 401) {
-    clearSession()
-    throw new Error('session expired')
-  }
   if (!res.ok) {
     const err = await res.text()
     throw new Error(err || `save failed (${res.status})`)
@@ -132,14 +152,7 @@ export async function saveNote(input: NoteInput, id?: string): Promise<NorsNote>
 }
 
 export async function deleteNote(id: string): Promise<void> {
-  const res = await fetch(`${baseUrl()}/api/collections/nors_notes/records/${id}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  })
-  if (res.status === 401) {
-    clearSession()
-    throw new Error('session expired')
-  }
+  const res = await authed(`/api/collections/nors_notes/records/${id}`, { method: 'DELETE' })
   if (!res.ok) {
     const err = await res.text()
     throw new Error(err || `delete failed (${res.status})`)
