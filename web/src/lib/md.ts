@@ -12,9 +12,49 @@ export async function runMermaidDiagrams(root: HTMLElement | undefined): Promise
   if (!root) return
   const nodes = [...root.querySelectorAll<HTMLElement>('pre code.language-mermaid')]
   if (nodes.length === 0) return
+
+  // Mount the frames before the lazy import so each diagram shows a spinner
+  // instead of an empty gap while mermaid downloads.
+  const diagrams: { frame: HTMLElement; viewport: HTMLElement; source: string }[] = []
+  for (const code of nodes) {
+    const source = code.textContent ?? ''
+    const pre = code.closest('pre')
+    if (!pre) continue
+
+    const frame = document.createElement('figure')
+    frame.className = 'mermaid-frame is-loading'
+    frame.innerHTML = `
+      <figcaption class="mermaid-bar">
+        <span class="mermaid-label">Diagram</span>
+        <button type="button" class="mermaid-zoom" aria-pressed="false">Expand</button>
+      </figcaption>
+      <div class="mermaid-viewport" tabindex="0" aria-label="Diagram">
+        <div class="spin-wrap" role="status" aria-label="Loading diagram"><span class="spin"></span></div>
+      </div>
+    `
+    pre.replaceWith(frame)
+
+    const viewport = frame.querySelector<HTMLElement>('.mermaid-viewport')
+    if (!viewport) continue
+
+    frame.querySelector<HTMLButtonElement>('.mermaid-zoom')?.addEventListener('click', (e) => {
+      const on = frame.classList.toggle('zoomed')
+      const btn = e.currentTarget as HTMLButtonElement
+      btn.setAttribute('aria-pressed', String(on))
+      btn.textContent = on ? 'Fit' : 'Expand'
+    })
+    diagrams.push({ frame, viewport, source })
+  }
+
   // Static import would bundle ~2 MB into the main chunk for every visit;
   // micro constraint requires mermaid to load only when a fence is present.
-  const { default: mermaid } = await import('mermaid')
+  let mermaid: typeof import('mermaid').default
+  try {
+    mermaid = (await import('mermaid')).default
+  } catch {
+    for (const d of diagrams) showDiagramError(d.frame, d.viewport, d.source)
+    return
+  }
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: 'strict',
@@ -66,25 +106,7 @@ export async function runMermaidDiagrams(root: HTMLElement | undefined): Promise
     },
   })
 
-  for (const code of nodes) {
-    const source = code.textContent ?? ''
-    const pre = code.closest('pre')
-    if (!pre) continue
-
-    const frame = document.createElement('figure')
-    frame.className = 'mermaid-frame'
-    frame.innerHTML = `
-      <figcaption class="mermaid-bar">
-        <span class="mermaid-label">Diagram</span>
-        <span class="mermaid-hint">Scroll to explore</span>
-      </figcaption>
-      <div class="mermaid-viewport" tabindex="0" aria-label="Scrollable diagram"></div>
-    `
-    pre.replaceWith(frame)
-
-    const viewport = frame.querySelector<HTMLElement>('.mermaid-viewport')
-    if (!viewport) continue
-
+  for (const { frame, viewport, source } of diagrams) {
     try {
       const valid = await mermaid.parse(source, { suppressErrors: true })
       if (!valid) throw new Error('Invalid Mermaid syntax')
@@ -99,28 +121,25 @@ export async function runMermaidDiagrams(root: HTMLElement | undefined): Promise
       svg.setAttribute('aria-label', 'Mermaid diagram')
       svg.removeAttribute('height')
       svg.removeAttribute('width')
-
-      const naturalWidth = svg.viewBox.baseVal.width
-      if (naturalWidth > 0) {
-        viewport.style.setProperty('--mermaid-width', `${Math.min(Math.ceil(naturalWidth), 1400)}px`)
-      }
-
-      requestAnimationFrame(() => {
-        frame.classList.toggle('can-scroll', viewport.scrollWidth > viewport.clientWidth + 2)
-      })
+      frame.classList.remove('is-loading')
     } catch {
-      frame.classList.add('has-error')
-      viewport.removeAttribute('tabindex')
-      viewport.removeAttribute('aria-label')
-
-      const message = document.createElement('p')
-      message.className = 'mermaid-error'
-      message.textContent = 'This diagram could not be rendered.'
-      const fallback = document.createElement('pre')
-      const fallbackCode = document.createElement('code')
-      fallbackCode.textContent = source
-      fallback.append(fallbackCode)
-      viewport.replaceChildren(message, fallback)
+      showDiagramError(frame, viewport, source)
     }
   }
+}
+
+function showDiagramError(frame: HTMLElement, viewport: HTMLElement, source: string): void {
+  frame.classList.remove('is-loading')
+  frame.classList.add('has-error')
+  viewport.removeAttribute('tabindex')
+  viewport.removeAttribute('aria-label')
+
+  const message = document.createElement('p')
+  message.className = 'mermaid-error'
+  message.textContent = 'This diagram could not be rendered.'
+  const fallback = document.createElement('pre')
+  const fallbackCode = document.createElement('code')
+  fallbackCode.textContent = source
+  fallback.append(fallbackCode)
+  viewport.replaceChildren(message, fallback)
 }

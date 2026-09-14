@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Reader from './pages/Reader'
 import Editor from './pages/Editor'
 import Toast from './components/Toast'
+import { Spinner } from './components/Spinner'
 import './App.css'
 const App: Component = () => {
   if (new URLSearchParams(location.search).get('new') === '1') {
@@ -132,7 +133,10 @@ const App: Component = () => {
               />
             </label>
             <button type="submit" disabled={busy()}>
-              {busy() ? '…' : 'Enter'}
+              <Show when={busy()}>
+                <Spinner />
+              </Show>
+              {busy() ? 'Signing in…' : 'Enter'}
             </button>
             </form>
           </div>

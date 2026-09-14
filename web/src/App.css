@@ -146,6 +146,11 @@ button > svg,
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+
+  /* A frozen spinner reads as a hang; slow it down instead of stopping it. */
+  .spin {
+    animation-duration: 1.6s !important;
+  }
 }
 
 button:disabled {
@@ -882,6 +887,10 @@ button.danger-confirm:hover {
 }
 
 .iconbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -952,18 +961,56 @@ button.danger-confirm:hover {
 }
 
 .edit-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   justify-content: flex-end;
   margin-top: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
 }
 
 .edit-foot button {
   min-width: 132px;
 }
+
+.edit-shortcut {
+  margin-right: auto;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.edit-shortcut kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  font-family: inherit;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .edit-shortcut {
+    display: none;
+  }
+
+  .edit-foot button {
+    flex: 1;
+    min-width: 0;
+  }
+}
 .editor textarea.doctext {
-  min-height: 22vh;
+  display: block;
+  min-height: max(55vh, 320px);
   width: 100%;
+  overflow: hidden;
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -971,7 +1018,7 @@ button.danger-confirm:hover {
   font-family: ui-monospace, monospace;
   font-size: 0.95rem;
   line-height: 1.65;
-  resize: vertical;
+  resize: none;
   padding: 0.25rem 0;
 }
 
@@ -985,11 +1032,12 @@ button.danger-confirm:hover {
 }
 
 .prose.preview {
+  max-width: none;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 0.75rem 1rem;
-  min-height: 200px;
+  padding: 1rem 1.25rem;
+  min-height: max(55vh, 320px);
 }
 
 .empty-wrap {
@@ -1017,6 +1065,25 @@ button.danger-confirm:hover {
   border-radius: 50%;
   border: 3px solid var(--line);
   border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+
+.spin.sm {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-width: 2px;
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+}
+
+.inline-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+button.icononly.spinning svg {
   animation: spin 0.8s linear infinite;
 }
 

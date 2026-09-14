@@ -5,6 +5,7 @@ import { deleteNote, KIND_LABELS, getNote } from '../lib/pb'
 import type { NorsNote } from '../lib/pb'
 import { go } from '../lib/route'
 import Toast from '../components/Toast'
+import { LoadingBlock, Spinner } from '../components/Spinner'
 
 const Reader: Component<{ slug: string; onExpired: () => void }> = (props) => {
   const [err, setErr] = createSignal('')
@@ -65,9 +66,9 @@ const Reader: Component<{ slug: string; onExpired: () => void }> = (props) => {
     <main class="reader">
       <Toast message={err()} onDismiss={() => setErr('')} />
       <Show when={note.loading || rendered.loading}>
-        <p class="hint">Loading…</p>
+        <LoadingBlock label="Loading note" />
       </Show>
-      <Show when={note()}>
+      <Show when={!note.loading && note()}>
         {(n) => (
           <>
             <nav class="reader-nav" aria-label="Note navigation">
@@ -79,12 +80,19 @@ const Reader: Component<{ slug: string; onExpired: () => void }> = (props) => {
               </a>
               <div class="reader-actions">
                 <button type="button" class="danger-ghost" disabled={deleting()} onClick={() => setConfirmingDelete(true)}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M3 6h18" />
-                    <path d="M8 6V4h8v2" />
-                    <path d="m19 6-1 14H6L5 6" />
-                    <path d="M10 11v5M14 11v5" />
-                  </svg>
+                  <Show
+                    when={deleting()}
+                    fallback={
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 6h18" />
+                        <path d="M8 6V4h8v2" />
+                        <path d="m19 6-1 14H6L5 6" />
+                        <path d="M10 11v5M14 11v5" />
+                      </svg>
+                    }
+                  >
+                    <Spinner />
+                  </Show>
                   {deleting() ? 'Deleting…' : 'Delete'}
                 </button>
                 <a class="button-link" href={`#/edit/${encodeURIComponent(n().slug)}`}>
@@ -156,6 +164,9 @@ const Reader: Component<{ slug: string; onExpired: () => void }> = (props) => {
                       Cancel
                     </button>
                     <button type="button" class="danger-confirm" disabled={deleting()} onClick={() => onDelete(n())}>
+                      <Show when={deleting()}>
+                        <Spinner />
+                      </Show>
                       {deleting() ? 'Deleting…' : 'Delete note'}
                     </button>
                   </div>

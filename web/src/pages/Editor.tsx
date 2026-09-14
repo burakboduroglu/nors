@@ -1,10 +1,11 @@
-import { createResource, createSignal, For, onCleanup, onMount, Show } from 'solid-js'
+import { createEffect, createResource, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js'
 import type { Component } from 'solid-js'
 import { renderMarkdown, runMermaidDiagrams } from '../lib/md'
 import { KIND_LABELS, NOTE_KINDS, getNote, saveNote } from '../lib/pb'
 import type { NoteInput, NorsNote } from '../lib/pb'
 import { go, NEW_SLUG } from '../lib/route'
 import Toast from '../components/Toast'
+import { LoadingBlock, Spinner } from '../components/Spinner'
 
 function slugify(title: string): string {
   const tr: Record<string, string> = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' }
@@ -15,6 +16,8 @@ function slugify(title: string): string {
     .replace(/^-+|-+$/g, '')
     .slice(0, 80)
 }
+
+const MOD_KEY = /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘' : 'Ctrl'
 
 function blank(): NorsNote {
   return {
@@ -53,7 +56,7 @@ const Editor: Component<{ slug: string; onExpired: () => void }> = (props) => {
     <main class="editor">
       <Toast message={err()} onDismiss={() => setErr('')} />
       <Show when={existing.loading}>
-        <p class="hint">Loading…</p>
+        <LoadingBlock label="Loading note" />
       </Show>
       <Show when={existing()}>
         {(n) => <EditorForm initial={n()} onExpired={props.onExpired} />}
@@ -91,17 +94,64 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
       if (location.hash !== prevHash) location.hash = prevHash
       else armed = true
     }
+    const onUnload = (e: BeforeUnloadEvent) => {
+      if (snapshot() !== base) e.preventDefault()
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey || e.key.toLowerCase() !== 's') return
+      e.preventDefault()
+      if (!busy()) void onSave(n().status === 'published' ? 'published' : 'draft')
+    }
+    const onResize = () => fit()
     window.addEventListener('hashchange', onHash)
-    onCleanup(() => window.removeEventListener('hashchange', onHash))
+    window.addEventListener('beforeunload', onUnload)
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('resize', onResize)
+    onCleanup(() => {
+      window.removeEventListener('hashchange', onHash)
+      window.removeEventListener('beforeunload', onUnload)
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', onResize)
+    })
   })
   const [preview, setPreview] = createSignal('')
+  const [rendering, setRendering] = createSignal(false)
   let area: HTMLTextAreaElement | undefined
   let prevEl: HTMLDivElement | undefined
 
-  function refocus(el: HTMLTextAreaElement, s: number, e: number) {
+  // Grow the textarea with its content so long notes never scroll inside a small box.
+  // Restoring scrollY stops the page from jumping while the height is briefly reset.
+  function fit() {
+    const el = area
+    if (!el) return
+    const y = window.scrollY
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+    window.scrollTo({ top: y })
+    if (document.activeElement === el) revealCaret(el)
+  }
+
+  // The page, not the textarea, scrolls now, and the sticky footer covers the bottom
+  // of the viewport; nudge the page so the caret line stays above it while typing.
+  function revealCaret(el: HTMLTextAreaElement) {
+    const style = getComputedStyle(el)
+    const lineHeight = parseFloat(style.lineHeight) || 24
+    const linesBelow = el.value.slice(el.selectionEnd).split('\n').length - 1
+    const rect = el.getBoundingClientRect()
+    const caretBottom = rect.bottom - parseFloat(style.paddingBottom) - linesBelow * lineHeight
+    const foot = document.querySelector('.edit-foot')?.getBoundingClientRect().top ?? window.innerHeight
+    const overlap = caretBottom - (foot - 12)
+    if (overlap > 0) window.scrollBy({ top: overlap })
+  }
+
+  createEffect(on([body, tab], () => queueMicrotask(fit)))
+
+  // Toolbar actions can switch back from preview, which remounts the textarea,
+  // so resolve `area` after the switch instead of capturing the old element.
+  function refocus(s: number, e: number) {
     queueMicrotask(() => {
-      el.focus()
-      el.setSelectionRange(s, e)
+      area?.focus()
+      area?.setSelectionRange(s, e)
     })
   }
 
@@ -114,7 +164,7 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
     const sel = v.slice(s, e) || placeholder
     setBody(v.slice(0, s) + before + sel + after + v.slice(e))
     setTab('write')
-    refocus(el, s + before.length, s + before.length + sel.length)
+    refocus(s + before.length, s + before.length + sel.length)
   }
 
   function prefixLines(prefix: string) {
@@ -133,7 +183,7 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
       .join('\n')
     setBody(v.slice(0, start) + next + v.slice(tail))
     setTab('write')
-    refocus(el, start, start + next.length)
+    refocus(start, start + next.length)
   }
 
   function insertMermaid() {
@@ -144,17 +194,29 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
     const s = el.selectionStart ?? v.length
     setBody(v.slice(0, s) + template + v.slice(el.selectionEnd ?? s))
     setTab('write')
-    refocus(el, s + template.length, s + template.length)
+    refocus(s + template.length, s + template.length)
+  }
+
+  function onFormatKey(e: KeyboardEvent) {
+    if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
+    const key = e.key.toLowerCase()
+    if (key === 'b') surround('**', '**', 'text')
+    else if (key === 'i') surround('*', '*', 'text')
+    else if (key === 'k') surround('[', '](https://)', 'text')
+    else return
+    e.preventDefault()
   }
 
   async function showPreview() {
+    if (tab() === 'preview') return
     setTab('preview')
-    const r = await renderMarkdown(body())
+    setRendering(true)
+    const r = await renderMarkdown(body()).finally(() => setRendering(false))
+    if (tab() !== 'preview') return
     setPreview(r.html)
-    if (!r.mermaid) return
-    queueMicrotask(() => runMermaidDiagrams(prevEl))
+    if (r.mermaid) requestAnimationFrame(() => runMermaidDiagrams(prevEl))
   }
-  const [busy, setBusy] = createSignal(false)
+  const [busy, setBusy] = createSignal<'draft' | 'published' | null>(null)
   const [err, setErr] = createSignal('')
 
 
@@ -198,7 +260,7 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
       return setErr('Slug can only contain lowercase letters, numbers, and single hyphens.')
     }
     const input = collect(status)
-    setBusy(true)
+    setBusy(status)
     setErr('')
     try {
       const saved = await saveNote(input, n().id || undefined)
@@ -208,7 +270,7 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
       if (e instanceof Error && e.message === 'session expired') props.onExpired()
       else setErr(e instanceof Error ? e.message : String(e))
     } finally {
-      setBusy(false)
+      setBusy(null)
     }
   }
 
@@ -348,37 +410,40 @@ const EditorForm: Component<{ initial: NorsNote; onExpired: () => void }> = (pro
           </button>
         </div>
       </div>
-      <Show when={tab() === 'write'} fallback={<div class="prose preview" ref={prevEl} innerHTML={preview()} />}>
+      <Show
+        when={tab() === 'write'}
+        fallback={
+          <Show when={!rendering()} fallback={<div class="prose preview"><LoadingBlock label="Rendering preview" /></div>}>
+            <div class="prose preview" ref={prevEl} innerHTML={preview()} />
+          </Show>
+        }
+      >
         <textarea
           ref={area}
           class="doctext"
           placeholder="Write your note here…"
           value={body()}
           onInput={(e) => setBody(e.currentTarget.value)}
-          rows="8"
+          onKeyDown={onFormatKey}
         />
       </Show>
       <div class="edit-foot">
-        <Show
-          when={n().status === 'published'}
-          fallback={
-            <>
-              <button type="button" class="ghost" disabled={busy()} onClick={() => onSave('draft')}>
-                {busy() ? '…' : 'Save draft'}
-              </button>
-              <button type="button" disabled={busy()} onClick={() => onSave('published')}>
-                {busy() ? '…' : 'Publish'}
-              </button>
-            </>
-          }
-        >
-          <button type="button" class="ghost" disabled={busy()} onClick={() => onSave('draft')}>
-            {busy() ? '…' : 'Move to drafts'}
-          </button>
-          <button type="button" disabled={busy()} onClick={() => onSave('published')}>
-            {busy() ? '…' : 'Save changes'}
-          </button>
-        </Show>
+        <span class="edit-shortcut">
+          <kbd>{MOD_KEY}</kbd>
+          <kbd>S</kbd> to save
+        </span>
+        <button type="button" class="ghost" disabled={busy() !== null} onClick={() => onSave('draft')}>
+          <Show when={busy() === 'draft'}>
+            <Spinner />
+          </Show>
+          {n().status === 'published' ? 'Move to drafts' : 'Save draft'}
+        </button>
+        <button type="button" disabled={busy() !== null} onClick={() => onSave('published')}>
+          <Show when={busy() === 'published'}>
+            <Spinner />
+          </Show>
+          {n().status === 'published' ? 'Save changes' : 'Publish'}
+        </button>
       </div>
     </>
   )

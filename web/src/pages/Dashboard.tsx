@@ -4,6 +4,7 @@ import { KIND_LABELS, NOTE_KINDS, listNotes, saveNote } from '../lib/pb'
 import type { NoteKind, NorsNote } from '../lib/pb'
 import { go } from '../lib/route'
 import Toast from '../components/Toast'
+import { LoadingBlock, Spinner } from '../components/Spinner'
 
 const STEP = 10
 
@@ -89,7 +90,15 @@ const Dashboard: Component<{ onExpired: () => void }> = (props) => {
       <Toast message={err()} onDismiss={() => setErr('')} />
       <div class="dash-head">
         <h2>Notes</h2>
-        <button type="button" class="ghost icononly" title="Refresh" aria-label="Refresh" onClick={() => refetch()}>
+        <button
+          type="button"
+          class="ghost icononly"
+          classList={{ spinning: notes.loading }}
+          title="Refresh"
+          aria-label="Refresh"
+          disabled={notes.loading || saving()}
+          onClick={() => refetch()}
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="23 4 23 10 17 10" />
             <polyline points="1 20 1 14 7 14" />
@@ -109,13 +118,14 @@ const Dashboard: Component<{ onExpired: () => void }> = (props) => {
           )}
         </For>
       </nav>
-      <Show when={notes.loading}>
-        <div class="spin-wrap" role="status" aria-label="Loading">
-          <span class="spin" />
-        </div>
+      <Show when={notes.loading && items().length === 0}>
+        <LoadingBlock label="Loading notes" />
       </Show>
       <Show when={saving()}>
-        <p class="hint">Saving order…</p>
+        <p class="hint inline-status">
+          <Spinner />
+          Saving order…
+        </p>
       </Show>
       <Show when={!notes.loading && (notes() || []).length === 0}>
         <div class="empty-wrap">

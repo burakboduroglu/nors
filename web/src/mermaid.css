@@ -1,13 +1,12 @@
 .mermaid-frame {
-  width: min(calc(100vw - 2rem), 960px);
-  margin: 2rem 0 2rem 50%;
-  overflow: hidden;
-  transform: translateX(-50%);
+  max-width: 100%;
+  margin: 1.5rem 0;
   border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
   border-radius: 10px;
   background:
     radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 52%),
     var(--panel);
+  overflow: hidden;
 }
 
 .mermaid-bar {
@@ -29,25 +28,38 @@
   color: var(--tint);
 }
 
-.mermaid-hint {
-  display: none;
-  font-weight: 500;
+.mermaid-zoom {
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: none;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+  cursor: pointer;
 }
 
-.mermaid-frame.can-scroll .mermaid-hint {
-  display: inline;
+.mermaid-zoom:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: transparent;
+}
+
+.mermaid-zoom[aria-pressed='true'] {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
 }
 
 .mermaid-viewport {
-  --mermaid-width: 100%;
   max-width: 100%;
-  padding: clamp(1rem, 3vw, 2rem);
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  scrollbar-color: color-mix(in srgb, var(--accent) 40%, var(--line)) transparent;
-  scrollbar-width: thin;
+  padding: 1rem;
+  overflow: hidden;
 }
 
 .mermaid-viewport:focus-visible {
@@ -56,10 +68,21 @@
 
 .mermaid-viewport svg {
   display: block;
-  width: max(100%, var(--mermaid-width)) !important;
-  max-width: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
   height: auto !important;
   margin: 0 auto;
+}
+
+.mermaid-frame.zoomed .mermaid-viewport {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+}
+
+.mermaid-frame.zoomed .mermaid-viewport svg {
+  width: 1400px !important;
+  max-width: none !important;
 }
 
 .mermaid-viewport .nodeLabel,
@@ -74,7 +97,8 @@
   background: var(--panel) !important;
 }
 
-.mermaid-frame.has-error .mermaid-hint {
+.mermaid-frame.is-loading .mermaid-zoom,
+.mermaid-frame.has-error .mermaid-zoom {
   display: none;
 }
 
@@ -87,15 +111,4 @@
 .mermaid-frame.has-error pre {
   margin: 0;
   background: var(--bg);
-}
-
-@media (max-width: 600px) {
-  .mermaid-frame {
-    width: calc(100vw - 1.8rem);
-    margin-block: 1.5rem;
-  }
-
-  .mermaid-viewport {
-    padding: 1rem;
-  }
 }
