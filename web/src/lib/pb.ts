@@ -119,6 +119,9 @@ export async function listNotes(opts?: { includeDrafts?: boolean }): Promise<Nor
   return data.items.map(normalize)
 }
 export async function getNote(slug: string): Promise<NorsNote> {
+  // The slug comes from the URL hash and is spliced into a filter string; the
+  // editor only ever saves this shape, so anything else cannot match a note.
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error(`no note: ${slug}`)
   const params = new URLSearchParams({ filter: `slug = "${slug}"` })
   const res = await authed(`/api/collections/nors_notes/records?${params}`)
   if (!res.ok) throw new Error(`get failed (${res.status})`)
