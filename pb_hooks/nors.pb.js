@@ -24,11 +24,14 @@ routerAdd("GET", "/api/nors/summary", (e) => {
     if (record.getBool("pinned")) pinned++
 
     if (recent.length < 5) {
+      // Same labels as KIND_LABELS in web/src/lib/pb.ts. Defined inside the
+      // handler because a hook callback cannot see its file's top-level scope.
+      const labels = { diagram: "Diagram", runbook: "Runbook", reference: "Reference", scratch: "Scratch" }
       const kind = record.getString("kind")
       recent.push({
         title: record.getString("title"),
         slug: record.getString("slug"),
-        kind: kind === "runbook" ? "Runbook" : kind === "decision" ? "Karar" : "Not",
+        kind: labels[kind] || kind,
         status: status,
         updated: record.getString("updated").substring(0, 10)
       })
