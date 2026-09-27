@@ -3,7 +3,7 @@
 // steps that cannot be copied for you. It never touches pb_data, never starts
 // or stops anything, and never talks to the network.
 
-import { readFile, mkdir, cp, access } from "node:fs/promises"
+import { readFile, mkdir, cp, rm, access } from "node:fs/promises"
 import { constants } from "node:fs"
 import { join, dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -58,6 +58,9 @@ async function install(dir, force) {
   for (const [from, to] of parts) {
     const dest = join(target, to)
     await mkdir(dirname(dest), { recursive: true })
+    // The page directory belongs to Nors alone; clearing it drops the previous
+    // build's hashed assets instead of piling them up on every upgrade.
+    if (to.startsWith("pb_public")) await rm(dest, { recursive: true, force: true })
     await cp(join(ROOT, from), dest, { recursive: true })
     console.log(`  wrote ${to}/`)
   }
