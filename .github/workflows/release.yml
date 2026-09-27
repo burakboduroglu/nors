@@ -1,0 +1,46 @@
+name: release
+
+# A version tag push publishes to npm with OIDC trusted publishing — no token.
+# One-time setup on npmjs.com: package → Settings → Trusted publisher → GitHub
+# Actions → burakboduroglu/nors, workflow release.yml.
+# `npm publish` runs `prepack`, so the tarball always carries a fresh
+# pb_public/nors build; nothing generated is committed to git.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Version tag to publish (for retrying a failed release)
+        required: true
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - run: npm install -g npm@latest
+      - run: bun install --frozen-lockfile
+        working-directory: web
+      - name: tag matches package version
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          test "v$(node -p "require('./package.json').version")" = "$RELEASE_TAG" || {
+            echo "tag $RELEASE_TAG != package.json version"
+            exit 1
+          }
+      - run: npm publish --access public

@@ -4,3 +4,6 @@ web/dist/
 .DS_Store
 *.log
 .vite/
+pb_public/nors/
+*.tgz
+deploy/glance.yml.from-server

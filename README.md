@@ -51,8 +51,8 @@ Measured with `du`:
 
 | | |
 | --- | --- |
-| Installed files | **3.5 MB** — migration 4 KB, page the rest |
-| First visit | **~87 KB** — entry JS ~79 KB (gzip ~24 KB), CSS ~7.5 KB |
+| Installed files | **3.6 MB** — migration 4 KB, page the rest |
+| First visit | **~138 KB** — entry JS ~121 KB (gzip ~41 KB, including the DOMPurify sanitiser), CSS ~17 KB |
 | The other 3.4 MB | Mermaid diagram chunks, fetched only when a reader page holds a fence |
 | Database growth | one `nors_notes` row per note, inside the existing `pb_data` |
 | Extra processes | none |
@@ -74,9 +74,10 @@ before copying and start it afterwards** — PocketBase watches its directories
 and can race a service manager doing the same.
 
 For a source checkout and remote host, the `deploy/` installer performs the
-stop → copy → start sequence:
+stop → copy → start sequence. The page is not committed, so build it first:
 
 ```bash
+bun --cwd web install && bun run build
 scp -r pb_migrations pb_hooks pb_public deploy/install.sh host:/tmp/nors-stage/
 ssh host
 sudo /tmp/nors-stage/install.sh /tmp/nors-stage
@@ -131,7 +132,9 @@ CSS library, no UI server. Bun as the package manager.
 
 ## Develop the UI
 
-Source lives in `web/`. The shipped page is built output:
+Source lives in `web/`. The shipped page is built output — `pb_public/nors/`
+is not committed; `prepack` builds it into the npm tarball, and a `v*` tag push
+publishes through `.github/workflows/release.yml`.
 
 ```bash
 bun --cwd web install
