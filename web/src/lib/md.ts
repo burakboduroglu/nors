@@ -1,10 +1,14 @@
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import '../mermaid.css'
 
 let diagramId = 0
 
+// marked passes raw HTML and javascript: links through untouched, and the page
+// holds a superuser token in localStorage, so every body is sanitised before it
+// reaches innerHTML — agent-drafted markdown is pasted in unread.
 export async function renderMarkdown(body: string): Promise<{ html: string; mermaid: boolean }> {
-  const html = String(await marked.parse(body ?? ''))
+  const html = DOMPurify.sanitize(String(await marked.parse(body ?? '')))
   return { html, mermaid: html.includes('class="language-mermaid"') }
 }
 

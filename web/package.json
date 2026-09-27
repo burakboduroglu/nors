@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dompurify": "^3.4.16",
     "marked": "^18.0.12",
     "mermaid": "^11.17.2",
     "solid-js": "^1.9.15"
